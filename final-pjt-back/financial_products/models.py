@@ -4,7 +4,7 @@ from django.db import models
 
 
 class Stock(models.Model):
-    stock_code = models.CharField(max_length=6)
+    stock_code = models.CharField(max_length=6, unique=True)
     stock_name = models.CharField(max_length=100)
     # stock_name_short = models.CharField(max_length=100)
     stock_name_en = models.CharField(max_length=100)
@@ -19,6 +19,8 @@ class Stock(models.Model):
     # 주식종류 ( 중요도  : 상 )
     stock_type = models.CharField(max_length=20)
     # 액면가 ( 중요도  : 하 )
-    face_value = models.FloatField(null=True, blank=True, help_text="액면가 (무액면은 null)")
+    face_value = models.FloatField(
+        null=True, blank=True, help_text="액면가 (무액면은 null)"
+    )
     #  상장주식수 ( 중요도  : 상 )
     listed_shares = models.BigIntegerField()
