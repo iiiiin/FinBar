@@ -53,6 +53,8 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'   # 'mandatory' → 'none'
 INSTALLED_APPS = [
     'articles',
     'accounts',
+    'financial_products',
+    'drf_yasg',
     'rest_framework',
     'rest_framework.authtoken',
     'dj_rest_auth',
