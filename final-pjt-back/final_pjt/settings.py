@@ -37,12 +37,16 @@ DEBUG = True
 # 전체 허용
 ALLOWED_HOSTS = ['*']
 
+AUTH_USER_MODEL = 'accounts.User'
+
 REST_AUTH = {
     'REGISTER_SERIALIZER': 'accounts.serializers.CustomRegisterSerializer',
 }
+# 이메일 백엔드: 실제 이메일 발송 대신 콘솔 출력
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-AUTH_USER_MODEL = 'accounts.User'
-
+# 이메일 인증 요구 여부: 테스트 단계에서는 꺼두기
+ACCOUNT_EMAIL_VERIFICATION = 'none'   # 'mandatory' → 'none'
 
 # Application definition
 
