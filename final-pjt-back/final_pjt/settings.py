@@ -41,7 +41,12 @@ AUTH_USER_MODEL = "accounts.User"
 
 REST_AUTH = {
     "REGISTER_SERIALIZER": "accounts.serializers.CustomRegisterSerializer",
+    # "USER_DETAILS_SERIALIZER": "accounts.serializers.CustomUserDetailsSerializer",
 }
+REST_AUTH_SERIALIZERS = {
+    "USER_DETAILS_SERIALIZER": "accounts.serializers.CustomUserDetailsSerializer"
+}
+
 # 이메일 백엔드: 실제 이메일 발송 대신 콘솔 출력
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
