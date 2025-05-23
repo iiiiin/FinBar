@@ -1,12 +1,18 @@
-from .models import Stock
-from django.shortcuts import render
-from datetime import datetime
 import sys
 import csv
-from rest_framework.response import Response
+import requests
+from datetime import datetime
 
-# from rest_framework import
-from rest_framework.decorators import api_view
+from .models import Stock
+from django.shortcuts import render
+from django.conf import settings
+
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.authentication import TokenAuthentication
+from .utils.clean import remove_special_and_space
 
 
 # DB 데이터 저장용 함수
@@ -35,3 +41,42 @@ from rest_framework.decorators import api_view
 #         stock.listed_shares = row[11]
 #         stock.save()
 #     return Response({})
+
+# 예금 상품 조회
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([AllowAny])
+def deposit_products(request):
+    API_KEY = settings.FINLIFE_API_KEY
+    URL = "http://finlife.fss.or.kr/finlifeapi/depositProductsSearch.json"
+    financeCd = request.GET.get("financeCd", "")
+    clean_financeCd = remove_special_and_space(financeCd).replace("은행", "")
+
+    params = {
+        "auth": API_KEY,
+        "topFinGrpNo": request.GET.get("topFinGrpNo", "020000"),
+        "pageNo": request.GET.get("pageNo", 1),
+        "financeCd": clean_financeCd,
+    }
+    data = requests.get(url=URL, params=params)
+    return Response(data.json())
+
+
+# 적금 상품 조회 
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([AllowAny])
+def saving_products(request):
+    API_KEY = settings.FINLIFE_API_KEY
+    URL = "http://finlife.fss.or.kr/finlifeapi/savingProductsSearch.json"
+    financeCd = request.GET.get("financeCd", "")
+    clean_financeCd = remove_special_and_space(financeCd).replace("은행", "")
+
+    params = {
+        "auth": API_KEY,
+        "topFinGrpNo": request.GET.get("topFinGrpNo", "020000"),
+        "pageNo": request.GET.get("pageNo", 1),
+        "financeCd": clean_financeCd,
+    }
+    data = requests.get(url=URL, params=params)
+    return Response(data.json())
