@@ -3,10 +3,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, defineProps, defineEmits } from 'vue'
+import { ref, onMounted, onBeforeUnmount, defineProps, defineEmits, watch } from 'vue'
 
 const props = defineProps({
-  initialContent: { type: String, default: '' }
+  content: { type: String, default: '' }
 })
 const emits = defineEmits(['update:content'])
 
@@ -19,13 +19,24 @@ onMounted(() => {
     initialEditType: 'wysiwyg',
     previewStyle: 'vertical',
     height: '400px',
-    initialValue: props.initialContent
+    initialValue: props.content
   })
-  // 내용 변경 시 emit
   editorInstance.on('change', () => {
     emits('update:content', editorInstance.getMarkdown())
   })
 })
+
+// **prop 변경 감지 후 에디터 내용 업데이트**
+watch(
+  () => props.content,
+  (newContent) => {
+    if (editorInstance && newContent !== editorInstance.getMarkdown()) {
+      // Markdown 으로 쓰고 있다면 setMarkdown
+      editorInstance.setMarkdown(newContent)
+      // HTML 로 쓰고 싶다면: editorInstance.setHTML(newContent)
+    }
+  }
+)
 
 onBeforeUnmount(() => {
   if (editorInstance) {
@@ -33,6 +44,7 @@ onBeforeUnmount(() => {
   }
 })
 </script>
+
 
 <style scoped>
 .toastui-editor {

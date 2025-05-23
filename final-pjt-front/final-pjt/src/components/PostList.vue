@@ -1,7 +1,7 @@
 <template>
   <v-list two-line>
     <template v-for="(post, index) in posts" :key="index">
-      <v-list-item class="post-item" @click="onSelect(index)">
+      <v-list-item class="post-item" @click="onSelect(post)">
         <!-- <v-list-item-content> -->
           <v-list-item-title>{{ post.title }}</v-list-item-title>
           <v-list-item-subtitle>

@@ -20,7 +20,7 @@
         <v-card elevation="2">
           <v-card-title class="headline">{{ article.title }}</v-card-title>
           <v-card-subtitle>
-            작성자: {{ article.author }} • {{ formatDate(article.created_at) }}
+            작성자: {{ nickname }} • {{ formatDate(created_at) }}
           </v-card-subtitle>
           <v-divider />
           <v-card-text>
@@ -49,7 +49,7 @@
                 :key="comment.id"
               >
                 <v-list-item-content>
-                  <v-list-item-subtitle>{{ comment.author }} • {{ formatDate(comment.created_at) }}</v-list-item-subtitle>
+                  <v-list-item-subtitle>{{ comment.nickname }} • {{ formatDate(comment.created_at) }}</v-list-item-subtitle>
                   <v-list-item-title>{{ comment.text }}</v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
@@ -77,13 +77,28 @@ import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
 import Title         from '@/components/Title.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const router     = useRouter()
 const route      = useRoute()
 const pageTitle  = '게시글 상세'
-const article    = ref({ title: '', author: '', content: '', created_at: '' })
+const article    = ref({ title: '', content: '', created_at: '' })
 const comments   = ref([])
 const newComment = ref('')
+const nickname = route.query.nickname
+const created_at = route.query.datetime
+const auth = useAuthStore()
+
+ // 로그인 여부 체크 (미인증 접근 차단)
+//  if (!auth.isLoggedIn) {
+//    router.replace({ name: 'login' })
+//  }
+
+ // 글 작성자와 현재 유저가 일치하는지
+//  const isOwner = computed(() => {
+//    // backend가 username 또는 nickname 필드를 준다고 가정
+//    return auth.user?.username === article.value.author
+//  })
 
 // 날짜 포맷 함수
 function formatDate(dateStr) {
@@ -97,6 +112,7 @@ async function loadData() {
   try {
     const { data: art } = await axios.get(`http://127.0.0.1:8000/articles/${id}/`)
     article.value = art
+    console.log(art)
     const { data: cmts } = await axios.get(`http://127.0.0.1:8000/articles/${id}/comments/`)
     comments.value = cmts
   } catch (e) {

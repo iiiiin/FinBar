@@ -76,7 +76,6 @@ async function fetchArticles() {
       // params: { search: q.value, page: page.value }
     })
     articles.value = data
-    console.log(data)
     // totalPages.value = data.total_pages
   } catch (error) {
     console.error(error)
@@ -84,8 +83,8 @@ async function fetchArticles() {
 }
 
 // 상세 페이지로 이동
-function goDetail(idx) {
-  router.push({ name: 'articleDetail', params: { id : idx } })
+function goDetail(post) {
+  router.push({ name: 'articleDetail', params: { id : 4 }, query: { nickname : post.nickname, datetime : post.created_at } })
 }
 
 // 페이지 변경
