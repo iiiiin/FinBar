@@ -6,6 +6,7 @@ import axios from 'axios'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('token') || '',
+    username: localStorage.getItem('username') || '',
     user: null,
   }),
   getters: {
@@ -13,9 +14,11 @@ export const useAuthStore = defineStore('auth', {
     isLoggedIn: (state) => !!state.token,
   },
   actions: {
-    setToken(token) {
+    setToken(token, username) {
       this.token = token
+      this.username = username
       localStorage.setItem('token', token)
+      localStorage.setItem('username', username)
       axios.defaults.headers.common['Authorization'] = `Token ${token}`
     },
     clearAuth() {
@@ -25,7 +28,6 @@ export const useAuthStore = defineStore('auth', {
       delete axios.defaults.headers.common['Authorization']
     },
     logout() {
-      // 백엔드 호출이 필요하면 여기에 추가하고...
       axios.post('http://127.0.0.1:8000/accounts/logout/')
       this.clearAuth()
     }

@@ -84,7 +84,7 @@ async function fetchArticles() {
 
 // 상세 페이지로 이동
 function goDetail(post) {
-  router.push({ name: 'articleDetail', params: { id : 4 }, query: { nickname : post.nickname, datetime : post.created_at } })
+  router.push({ name: 'articleDetail', params: { id : post.id }})
 }
 
 // 페이지 변경

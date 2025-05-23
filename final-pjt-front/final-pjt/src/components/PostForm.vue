@@ -2,8 +2,6 @@
   <div class="post-form">
     <!-- 제목 입력 -->
     <TitleInput v-model="title" placeholder="게시글 제목" />
-    <!-- 작성자 입력 -->
-    <AuthorInput v-model="author" placeholder="게시글 작성자" />
 
     <!-- 내용 에디터 -->
     <label class="content-label">내용</label>
@@ -26,7 +24,6 @@ import AuthorInput from './AuthorInput.vue'
 const emits = defineEmits(['submit','cancel'])
 
 const title = ref('')
-const author = ref('')
 let content = ''
 
 const editorRef = ref(null)
@@ -48,7 +45,7 @@ onBeforeUnmount(() => {
 
 function onSubmit() {
   content = editorInstance.getMarkdown()
-  emits('submit', { title: title.value, author: author.value, content })
+  emits('submit', { title: title.value, content })
 }
 
 function onCancel() {

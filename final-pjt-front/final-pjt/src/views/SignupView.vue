@@ -14,11 +14,15 @@
                 :rules="[v => !!v || 'ID를 입력해주세요']"
                 required
               />
-              <v-text-field
-                v-model="password1"
-                label="비밀번호"
-                type="password"
-                :rules="[v => v.length >= 6 || '비밀번호는 6자 이상이어야 합니다']"
+              <!-- 나이 입력을 셀렉트 박스로 변경 -->
+              <v-select
+                v-model="age"
+                label="연령대"
+                :items="ageOptions"
+                :rules="[
+                  v => !!v || '나이를 입력해주세요',
+                  v => v > 0 || '유효한 나이를 입력해주세요'
+                ]"
                 required
               />
               <v-text-field
@@ -95,7 +99,9 @@ const password1 = ref('')
 const password2 = ref('')
 const email     = ref('')
 const nickname  = ref('')
-const age       = ref('')
+const age       = ref(null)
+const ageOptions = Array.from({ length: 10 }, (_, i) => (i + 1) * 10)
+
 
 const isSubmitting = ref(false)
 const error = ref('')

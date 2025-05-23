@@ -90,7 +90,7 @@ async function handleLogin() {
     })
     console.log('login success:', res.data)
     // 1) Pinia + localStorage 에 토큰 저장
-    auth.setToken(res.data.key)      // 백에서 반환하는 키 이름에 맞춰 변경
+    auth.setToken(res.data.key, username.value)      // 백에서 반환하는 키 이름에 맞춰 변경
     // 2) 로그인 후 원하는 페이지로 이동
     router.push('/')
   } catch (err) {

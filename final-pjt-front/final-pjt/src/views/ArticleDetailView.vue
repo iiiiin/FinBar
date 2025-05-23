@@ -20,7 +20,7 @@
         <v-card elevation="2">
           <v-card-title class="headline">{{ article.title }}</v-card-title>
           <v-card-subtitle>
-            작성자: {{ nickname }} • {{ formatDate(created_at) }}
+            작성자: {{ article.username }} • {{ formatDate(article.created_at) }}
           </v-card-subtitle>
           <v-divider />
           <v-card-text>
@@ -29,8 +29,10 @@
           <v-card-actions>
             <v-btn text @click="goBack">뒤로</v-btn>
             <v-spacer />
-            <v-btn text color="error" @click="deleteArticle">삭제</v-btn>
-            <v-btn text color="primary" @click="goEdit">수정</v-btn>
+            <template v-if="isOwner">
+              <v-btn text color="error" @click="deleteArticle">삭제</v-btn>
+              <v-btn text color="primary" @click="goEdit">수정</v-btn>
+            </template>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -43,17 +45,28 @@
           <v-card-title class="subtitle-1">댓글 ({{ comments.length }})</v-card-title>
           <v-divider />
           <v-card-text>
-            <v-list>
-              <v-list-item
-                v-for="comment in comments"
-                :key="comment.id"
-              >
-                <v-list-item-content>
-                  <v-list-item-subtitle>{{ comment.nickname }} • {{ formatDate(comment.created_at) }}</v-list-item-subtitle>
-                  <v-list-item-title>{{ comment.text }}</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
+            <template v-if="comments.length">
+              <v-list>
+                <v-list-item
+                  v-for="comment in comments"
+                  :key="comment.id"
+                  class="comment-item"
+                >
+                  <!-- <div v-if="editingId !== comment.id"> -->
+                  <div>
+                    <v-list-item-subtitle>
+                      {{ comment.nickname }} • {{ formatDate(comment.created_at) }}
+                    </v-list-item-subtitle>
+                    <v-list-item-title>{{ comment.content }}</v-list-item-title>
+                    <v-spacer />
+                  </div>
+                </v-list-item>
+              </v-list>
+            </template>
+            <template v-else>
+              <div class="text-center grey--text">아직 댓글이 없습니다.</div>
+            </template>
+
             <!-- 댓글 입력 -->
             <v-form @submit.prevent="addComment">
               <v-text-field
@@ -72,66 +85,125 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
-import Title         from '@/components/Title.vue'
+import Title from '@/components/Title.vue'
 import { useAuthStore } from '@/stores/auth'
 
-const router     = useRouter()
-const route      = useRoute()
-const pageTitle  = '게시글 상세'
-const article    = ref({ title: '', content: '', created_at: '' })
-const comments   = ref([])
-const newComment = ref('')
-const nickname = route.query.nickname
-const created_at = route.query.datetime
+const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
+const pageTitle = '게시글 상세'
 
- // 로그인 여부 체크 (미인증 접근 차단)
-//  if (!auth.isLoggedIn) {
-//    router.replace({ name: 'login' })
-//  }
+const article = ref({ title: '', content: '', created_at: '', username: '' })
+const comments = ref([])
+const newComment = ref('')
 
- // 글 작성자와 현재 유저가 일치하는지
-//  const isOwner = computed(() => {
-//    // backend가 username 또는 nickname 필드를 준다고 가정
-//    return auth.user?.username === article.value.author
-//  })
+// inline edit state
+const editingId = ref(null)
+const editContent = ref('')
 
-// 날짜 포맷 함수
+// 로그인 여부 체크
+// if (!auth.isLoggedIn) {
+//   router.replace({ name: 'login' })
+// }
+
+// 글 소유자 여부
+const isOwner = computed(() => auth.username === article.value.username)
+
+// 날짜 포맷
 function formatDate(dateStr) {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleString()
+  return dateStr ? new Date(dateStr).toLocaleString() : ''
 }
 
-// 데이터 로드
-async function loadData() {
-  const id = route.params.id
+// 댓글 목록 로드
+async function loadComments() {
   try {
-    const { data: art } = await axios.get(`http://127.0.0.1:8000/articles/${id}/`)
-    article.value = art
-    console.log(art)
-    const { data: cmts } = await axios.get(`http://127.0.0.1:8000/articles/${id}/comments/`)
+    const { data: cmts } = await axios.get(`http://127.0.0.1:8000/articles/${route.params.id}/comment/`)
     comments.value = cmts
   } catch (e) {
-    console.error(e)
+    if (e.response?.status === 404) comments.value = []
+    else console.error(e)
   }
 }
 
+// 게시글 로드
+async function loadData() {
+  try {
+    const { data: art } = await axios.get(`http://127.0.0.1:8000/articles/${route.params.id}/`)
+    article.value = art
+  } catch (e) {
+    console.error(e)
+  }
+  await loadComments()
+}
+
 onMounted(loadData)
+
+// 댓글 작성
+async function addComment() {
+  if (!newComment.value.trim()) return
+  try {
+    await axios.post(`http://127.0.0.1:8000/articles/${route.params.id}/comment/`, { content: newComment.value })
+    newComment.value = ''
+    await loadComments()
+  } catch (e) {
+    console.error(e)
+    alert('댓글 작성에 실패했습니다.')
+  }
+}
+
+// 댓글 삭제
+async function deleteComment(id) {
+  try {
+    await axios.delete(`http://127.0.0.1:8000/articles/${route.params.id}/comment/${id}/`)
+    await loadComments()
+  } catch (e) {
+    console.error(e)
+    alert('댓글 삭제에 실패했습니다.')
+  }
+}
+
+// 댓글 수정 시작: form으로 변경
+function startEdit(comment) {
+  editingId.value = comment.id
+  editContent.value = comment.content
+}
+// 편집 취소
+function cancelEdit() {
+  editingId.value = null
+  editContent.value = ''
+}
+// 수정 저장
+async function saveEdit(id) {
+  if (!editContent.value.trim()) return
+  try {
+    await axios.patch(
+      `http://127.0.0.1:8000/articles/${route.params.id}/comment/${id}/`,
+      { content: editContent.value }
+    )
+    cancelEdit()
+    await loadComments()
+  } catch (e) {
+    console.error(e)
+    alert('댓글 수정에 실패했습니다.')
+  }
+}
 
 // 뒤로가기
 function goBack() {
   router.back()
 }
-// 수정 페이지로 이동
+// 게시글 수정
 function goEdit() {
+  if (!isOwner.value) return
   router.push({ name: 'articleUpdate', params: { id: route.params.id } })
 }
-// 삭제
+// 게시글 삭제
 async function deleteArticle() {
+  if (!isOwner.value) return
   if (!confirm('정말 삭제하시겠습니까?')) return
   try {
     await axios.delete(`http://127.0.0.1:8000/articles/${route.params.id}/`)
@@ -141,23 +213,9 @@ async function deleteArticle() {
     alert('삭제에 실패했습니다.')
   }
 }
-// 댓글 추가
-async function addComment() {
-  const id = route.params.id
-  if (!newComment.value.trim()) return
-  try {
-    await axios.post(`http://127.0.0.1:8000/articles/${id}/comments/`, { text: newComment.value })
-    newComment.value = ''
-    // 댓글 다시 불러오기
-    const { data: cmts } = await axios.get(`http://127.0.0.1:8000/articles/${id}/comments/`)
-    comments.value = cmts
-  } catch (e) {
-    console.error(e)
-    alert('댓글 작성에 실패했습니다.')
-  }
-}
 </script>
 
 <style scoped>
-/* 필요 시 추가 스타일 */
+.text-center { text-align: center; }
+.comment-item { align-items: center; }
 </style>
