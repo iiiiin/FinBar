@@ -7,13 +7,17 @@
             <v-card-title class="text-h5">내 정보 수정</v-card-title>
             <v-card-text>
               <v-form ref="form" @submit.prevent="handleUpdate">
-                <p>디버그: {{ form.username }}</p>
                 <v-text-field
                   v-model="form.username"
                   label="ID"
                   disabled
                 />
-                <p>디버그: {{ form.email }}</p>
+                <v-text-field
+                  v-model="form.email"
+                  label="이메일"
+                  :rules="emailRules"
+                  required
+                />
                 <v-text-field
                   v-model="form.email"
                   label="이메일"
@@ -57,7 +61,7 @@
   </template>
   
   <script setup>
-  import { reactive, ref, onMounted } from 'vue'
+  import { ref, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import axios from 'axios'
   import { useAuthStore } from '@/stores/auth'
@@ -66,7 +70,7 @@
   const auth = useAuthStore()
   
   // 폼 데이터
-  const form = reactive({
+  const form = ref({
     username: '',
     email: '',
     // nickname: '',
@@ -93,10 +97,8 @@
       // Swagger 문서의 GET /user/ 사용
       const { data } = await axios.get('http://127.0.0.1:8000/accounts/user/')
       console.log(data)
-      form.username = data.username
-      form.email    = data.email
-      console.log(form.username)
-      console.log(form.email)
+      form.value.username = data.username
+      form.value.email    = data.email
     //   form.nickname = data.nickname
     //   form.age      = data.age
     } catch (e) {
