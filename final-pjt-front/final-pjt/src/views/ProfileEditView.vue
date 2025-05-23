@@ -32,12 +32,12 @@
                 :rules="nicknameRules"
                 required
               />
-              <v-text-field
-                v-model="form.age"
-                label="나이"
-                type="number"
-                :rules="ageRules"
-                required
+              <v-select
+              v-model="form.age"
+              label="연령대"
+              :items="ageOptions"
+              :rules="ageRules"
+              required
               />
               <v-btn
                 class="mt-4"
@@ -114,8 +114,9 @@ const error   = ref('')
 // 유효성 룰
 const emailRules    = [v => !!v || '이메일을 입력해주세요', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || '유효한 이메일을 입력해주세요']
 const nicknameRules = [v => !!v || '닉네임을 입력해주세요']
-const ageRules      = [v => !!v || '나이를 입력해주세요', v => v > 0 && Number.isInteger(+v) || '유효한 나이를 입력해주세요']
+const ageRules      = [v => !!v || '연령대를 입력해주세요', v => v > 0 && Number.isInteger(+v) || '유효한 연령대를 입력해주세요']
 const passwordRules = [v => !passwordNew.value || v.length >= 6 || '새 비밀번호는 최소 6자리 이상이어야 합니다']
+const ageOptions = Array.from({ length: 10 }, (_, i) => (i + 1) * 10)
 
 // 마운트 시 프로필 정보 불러오기
 onMounted(async () => {
