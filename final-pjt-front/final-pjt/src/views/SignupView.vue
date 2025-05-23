@@ -1,5 +1,6 @@
 <!-- src/views/Signup.vue -->
 <template>
+  <NavigationBar />
   <v-container fluid class="fill-height">
     <v-row align="center" justify="center">
       <v-col cols="12" sm="8" md="4">
@@ -85,6 +86,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import NavigationBar from '@/components/NavigationBar.vue'
 
 const router = useRouter()
 
