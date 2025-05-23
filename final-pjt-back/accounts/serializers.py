@@ -1,3 +1,5 @@
+from allauth.account.utils import setup_user_email
+from allauth.account.models import EmailAddress
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import UserDetailsSerializer
 
@@ -5,8 +7,13 @@ from rest_framework import serializers
 from allauth.account.adapter import get_adapter
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.conf import settings
 
 from django.contrib.auth import get_user_model
+
+# 이메일 필드 관련 
+from allauth.account.models import EmailAddress
+from allauth.account.utils import setup_user_email
 
 
 class CustomRegisterSerializer(RegisterSerializer):
@@ -33,7 +40,8 @@ class CustomRegisterSerializer(RegisterSerializer):
 
         if "password1" in self.cleaned_data:
             try:
-                adapter.clean_password(self.cleaned_data["password1"], user=user)
+                adapter.clean_password(
+                    self.cleaned_data["password1"], user=user)
             except DjangoValidationError as exc:
                 raise serializers.ValidationError(
                     detail=serializers.as_serializer_error(exc)
@@ -45,15 +53,28 @@ class CustomRegisterSerializer(RegisterSerializer):
 class CustomUserDetailsSerializer(UserDetailsSerializer):
     age = serializers.IntegerField(required=True)
     nickname = serializers.CharField(max_length=150, required=True)
-    username = serializers.CharField(read_only=True)  # username은 읽기 전용
+    username = serializers.CharField(read_only=True)
     email = serializers.EmailField(required=True)
 
     class Meta(UserDetailsSerializer.Meta):
         model = get_user_model()
-        fields = UserDetailsSerializer.Meta.fields + ("email", "age", "nickname")
+        fields = UserDetailsSerializer.Meta.fields + \
+            ("email", "age", "nickname")
         read_only_fields = ("username",)
 
     def update(self, instance, validated_data):
-        instance.email = validated_data.get("email", instance.email)
+        # 1) 이메일이 바뀌었으면 allauth 유틸로 처리
+        new_email = validated_data.get("email")
+        if new_email and new_email != instance.email:
+            # 1-1) 실제 User.email 갱신
+            instance.email = new_email
+            instance.save()
+            # 1-2) EmailAddress도 동기화 (기존 기본 이메일을 업데이트)
+            EmailAddress.objects.filter(
+                user=instance, primary=True).update(email=new_email)
+            # -- 또는 확인 이메일을 보내고 싶다면 setup_user_email(request, instance, new_email, confirm=True)
+        # 2) 나머지 필드
+        instance.age = validated_data.get("age", instance.age)
+        instance.nickname = validated_data.get("nickname", instance.nickname)
         instance.save()
         return instance
