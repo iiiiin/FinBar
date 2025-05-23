@@ -1,5 +1,6 @@
 <!-- src/views/Login.vue -->
 <template>
+  <NavigationBar />
   <v-container fluid class="fill-height">
     <v-row align="center" justify="center">
       <v-col cols="12" sm="8" md="4">
@@ -55,6 +56,8 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
+import NavigationBar from '@/components/NavigationBar.vue'
+
 
 const router = useRouter()
 const username = ref('')
