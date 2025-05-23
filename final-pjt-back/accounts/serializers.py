@@ -11,7 +11,7 @@ from django.conf import settings
 
 from django.contrib.auth import get_user_model
 
-# 이메일 필드 관련
+# 이메일 필드 관련 
 from allauth.account.models import EmailAddress
 from allauth.account.utils import setup_user_email
 
@@ -63,20 +63,16 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
         read_only_fields = ("username",)
 
     def update(self, instance, validated_data):
+        # 1) 이메일이 바뀌었으면 allauth 유틸로 처리
         new_email = validated_data.get("email")
         if new_email and new_email != instance.email:
-            # 방법 A) allauth helper 사용
-            setup_user_email(
-                self.context["request"],
-                instance,
-                new_email,
-                confirm=False  # 이메일 확인 이메일을 보내지 않도록
-            )
-            # 또는 방법 B) 직접 업데이트
-            # instance.email = new_email
-            # instance.save()
-            # EmailAddress.objects.filter(user=instance, primary=True) \
-            #     .update(email=new_email)
+            # 1-1) 실제 User.email 갱신
+            instance.email = new_email
+            instance.save()
+            # 1-2) EmailAddress도 동기화 (기존 기본 이메일을 업데이트)
+            EmailAddress.objects.filter(
+                user=instance, primary=True).update(email=new_email)
+            # -- 또는 확인 이메일을 보내고 싶다면 setup_user_email(request, instance, new_email, confirm=True)
         # 2) 나머지 필드
         instance.age = validated_data.get("age", instance.age)
         instance.nickname = validated_data.get("nickname", instance.nickname)
