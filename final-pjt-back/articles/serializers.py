@@ -3,27 +3,43 @@ from .models import Article, Comment
 from django.contrib.auth import get_user_model
 
 
-class ArticleListSerializer(serializers.ModelSerializer):
+class UserInfoMixin(serializers.Serializer):
     nickname = serializers.ReadOnlyField(source="user.nickname")
-
-    class Meta:
-        model = Article
-        fields = ("id", "title", "content", "user", "nickname", "created_at")
-        read_only_fields = ("id",)
-
-
-class ArticleSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source="user.username")
 
+
+class ArticleListSerializer(UserInfoMixin, serializers.ModelSerializer):
     class Meta:
         model = Article
-        fields = "__all__"
-        read_only_fields = ("id", "user", "username")
+        fields = (
+            "id",
+            "title",
+            "content",
+            "user",
+            "nickname",
+            "username",
+            "created_at",
+        )
+        read_only_fields = ("id", "user", "nickname", "username")
 
 
-class CommentListSerializer(serializers.ModelSerializer):
-    nickname = serializers.ReadOnlyField(source="user.nickname")
+class ArticleSerializer(UserInfoMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Article
+        fields = (
+            "id",
+            "title",
+            "content",
+            "user",
+            "nickname",
+            "username",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "user", "nickname", "username")
 
+
+class CommentListSerializer(UserInfoMixin, serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = (
@@ -32,13 +48,15 @@ class CommentListSerializer(serializers.ModelSerializer):
             "content",
             "user",
             "nickname",
+            "username",
             "created_at",
             "updated_at",
         )
+        read_only_fields = ("id", "user", "nickname", "username")
 
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = "__all__"
-        read_only_fields = ("id", "article", "user", "nickname")
+        fields = ("id", "article", "content", "user", "created_at", "updated_at")
+        read_only_fields = ("id", "user", "article")
