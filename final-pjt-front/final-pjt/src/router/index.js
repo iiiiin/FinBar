@@ -45,12 +45,12 @@ const router = createRouter({
     },
     {
       path: '/articles/:id',
-      name: 'detail',
+      name: 'articleDetail',
       component: ArticleDetailView,
     },
     {
       path: '/articles/:id/update',
-      name: 'update',
+      name: 'articleUpdate',
       component: ArticleUpdateView,
     },
     {

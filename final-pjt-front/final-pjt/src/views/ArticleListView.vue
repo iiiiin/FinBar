@@ -1,5 +1,5 @@
 <template>
-  <v-container class="mx-auto" style="max-width:800px;">
+  <v-container class="mx-auto" :style="{ maxWidth : '800px'}">
     <!-- 네비게이션 바 -->
     <v-row>
       <v-col cols="12">
@@ -36,7 +36,7 @@
     <!-- 게시글 리스트 -->
     <v-row>
       <v-col cols="12" v-if="!articles.length">
-        <v-alert type="info" border="left" colored-border>
+        <v-alert type="info" border="start" colored-border>
           등록된 게시글이 없습니다.
         </v-alert>
       </v-col>
@@ -73,18 +73,18 @@ const totalPages = ref(1)
 async function fetchArticles() {
   try {
     const { data } = await axios.get('http://127.0.0.1:8000/articles/', {
-      params: { search: q.value, page: page.value }
+      // params: { search: q.value, page: page.value }
     })
-    articles.value   = data.results
-    totalPages.value = data.total_pages
+    articles.value = data
+    // totalPages.value = data.total_pages
   } catch (error) {
     console.error(error)
   }
 }
 
 // 상세 페이지로 이동
-function goDetail(id) {
-  router.push({ name: 'articleDetail', params: { id } })
+function goDetail(post) {
+  router.push({ name: 'articleDetail', params: { id : 4 }, query: { nickname : post.nickname, datetime : post.created_at } })
 }
 
 // 페이지 변경
