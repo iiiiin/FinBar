@@ -73,7 +73,7 @@
           </v-card-text>
           <v-card-actions>
             <router-link to="/login">
-              <v-btn text>로그인으로 이동</v-btn>
+              <v-btn text>로그인</v-btn>
             </router-link>
           </v-card-actions>
         </v-card>
