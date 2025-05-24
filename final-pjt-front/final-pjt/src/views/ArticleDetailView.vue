@@ -20,7 +20,7 @@
         <v-card elevation="2">
           <v-card-title class="headline">{{ article.title }}</v-card-title>
           <v-card-subtitle>
-            작성자: {{ article.username }} • {{ formatDate(article.created_at) }}
+            작성자: {{ article.nickname }} • {{ formatDate(article.created_at) }}
           </v-card-subtitle>
           <v-divider />
           <v-card-text>
@@ -45,27 +45,41 @@
           <v-card-title class="subtitle-1">댓글 ({{ comments.length }})</v-card-title>
           <v-divider />
           <v-card-text>
-            <template v-if="comments.length">
-              <v-list>
-                <v-list-item
-                  v-for="comment in comments"
-                  :key="comment.id"
-                  class="comment-item"
-                >
-                  <!-- <div v-if="editingId !== comment.id"> -->
-                  <div>
-                    <v-list-item-subtitle>
-                      {{ comment.nickname }} • {{ formatDate(comment.created_at) }}
-                    </v-list-item-subtitle>
-                    <v-list-item-title>{{ comment.content }}</v-list-item-title>
-                    <v-spacer />
-                  </div>
+            <v-list>
+              <template v-for="comment in comments" :key="comment.id">
+                <v-list-item class="comment-item">
+                    <!-- 댓글 내용 or inline edit -->
+                    <template v-if="editingId !== comment.id">
+                      <div>
+                        <div class="font-weight-medium">{{ comment.nickname }}</div>
+                        <div>{{ comment.content }}</div>
+                        <div class="text-caption grey--text">{{ formatDate(comment.created_at) }}</div>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <v-text-field
+                        v-model="editContent"
+                        dense
+                        outlined
+                        class="flex-grow-1 mr-2"
+                      />
+                    </template>
+
+                  <!-- 액션 버튼, 같은 행 우측 배치 -->
+                  <v-list-item-action class="d-flex align-center">
+                    <template v-if="editingId !== comment.id && auth.username === comment.username">
+                      <v-btn small text color="primary" @click="startEdit(comment)">수정</v-btn>
+                      <v-btn small text color="error" @click="deleteComment(comment.id)">삭제</v-btn>
+                    </template>
+                    <template v-else-if="editingId === comment.id">
+                      <v-btn small text color="secondary" @click="cancelEdit">취소</v-btn>
+                      <v-btn small text color="primary" @click="saveEdit(comment.id)">저장</v-btn>
+                    </template>
+                  </v-list-item-action>
                 </v-list-item>
-              </v-list>
-            </template>
-            <template v-else>
-              <div class="text-center grey--text">아직 댓글이 없습니다.</div>
-            </template>
+                <v-divider inset />
+              </template>
+            </v-list>
 
             <!-- 댓글 입력 -->
             <v-form @submit.prevent="addComment">
@@ -106,9 +120,9 @@ const editingId = ref(null)
 const editContent = ref('')
 
 // 로그인 여부 체크
-// if (!auth.isLoggedIn) {
-//   router.replace({ name: 'login' })
-// }
+if (!auth.isLoggedIn) {
+  router.replace({ name: 'login' })
+}
 
 // 글 소유자 여부
 const isOwner = computed(() => auth.username === article.value.username)
@@ -129,7 +143,7 @@ async function loadComments() {
   }
 }
 
-// 게시글 로드
+// 게시글 로드 및 댓글 로드
 async function loadData() {
   try {
     const { data: art } = await axios.get(`http://127.0.0.1:8000/articles/${route.params.id}/`)
@@ -166,23 +180,25 @@ async function deleteComment(id) {
   }
 }
 
-// 댓글 수정 시작: form으로 변경
+// 댓글 수정 시작
 function startEdit(comment) {
   editingId.value = comment.id
   editContent.value = comment.content
 }
-// 편집 취소
+// 댓글 수정 취소
 function cancelEdit() {
   editingId.value = null
   editContent.value = ''
 }
-// 수정 저장
+// 댓글 수정 저장
 async function saveEdit(id) {
   if (!editContent.value.trim()) return
   try {
-    await axios.patch(
+    await axios.put(
       `http://127.0.0.1:8000/articles/${route.params.id}/comment/${id}/`,
-      { content: editContent.value }
+      { article_pk: route.params.id,
+        comment_pk: id,
+        content: editContent.value }
     )
     cancelEdit()
     await loadComments()
