@@ -74,3 +74,14 @@ def marked_video(request):
     video_list = MarkedVideo.objects.filter(user_id=user)
     serializers = MarkVideoSerializers(video_list, many=True)
     return Response(serializers.data)
+
+
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def show_video(request):
+    id = request.GET.get("id")
+    URL = "https://www.googleapis.com/youtube/v3/videos"
+    params = {"part": "snippet", "id": id, "key": API_KEY}
+    data = requests.get(url=URL, params=params)
+    return Response(data.json())
