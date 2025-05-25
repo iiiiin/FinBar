@@ -3,6 +3,8 @@ import ArticleDetailView from '@/views/ArticleDetailView.vue'
 import ArticleListView from '@/views/ArticleListView.vue'
 import ArticleUpdateView from '@/views/ArticleUpdateView.vue'
 import BankMapView from '@/views/BankMapView.vue'
+import DepositDetailView from '@/views/DepositDetailView.vue'
+import DepositListView from '@/views/DepositListView.vue'
 import ErrorView from '@/views/ErrorView.vue'
 import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
@@ -84,9 +86,21 @@ const router = createRouter({
     },
     // 현물 상품 변동 페이지
     {
-      path: '/bankmap',
+      path: '/spotPrice',
       name: 'spotPrice',
       component: SpotPriceView,
+    },
+    // 예적금 상품 목록 페이지
+    {
+      path: '/depositlist',
+      name: 'depositList',
+      component: DepositListView,
+    },
+    // 예적금 상품 상세 페이지
+    {
+      path: '/depositdetail',
+      name: 'depositDetail',
+      component: DepositDetailView,
     },
   ],
 })
