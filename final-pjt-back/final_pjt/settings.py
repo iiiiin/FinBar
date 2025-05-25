@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 import environ
+from celery.schedules import crontab
 from allauth.account import app_settings as allauth_account_settings
 
 # MySql 사용시 조건부 해결용
@@ -58,6 +59,8 @@ INSTALLED_APPS = [
     "articles",
     "accounts",
     "financial_products",
+    "django_celery_results",
+    "django_celery_beat",
     "drf_yasg",
     "rest_framework",
     "rest_framework.authtoken",
@@ -75,6 +78,16 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 ]
+
+# celery 설정 (이하 3가지)
+# 메시지 브로커 (Redis) URL
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+
+# 결과 저장소: Django DB (Cloud SQL)
+CELERY_RESULT_BACKEND = "django-db"
+
+# 시간대 일치
+CELERY_TIMEZONE = "Asia/Seoul"
 
 
 SITE_ID = 1
@@ -107,6 +120,8 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://localhost:5173",
+    "http://localhost:6379",  # celery 자동화
+    "http://127.0.0.1:6379",  # celery 자동화
 ]
 
 
@@ -227,3 +242,17 @@ ACCOUNT_SIGNUP_FIELDS_CONFIG = {
     "username": {"required": True},
     "email": {"required": True},
 }
+
+
+# DB 데이터 저장 작업 자동화
+CELERY_BEAT_SCHEDULE = {
+    "fetch-deposit": {
+        "task": "financial_products.tasks.task_upsert_deposit",
+        "schedule": 30.0,  # 초 단위: 300초=5분
+    },
+    "fetch-saving": {
+        "task": "financial_products.tasks.task_upsert_saving",
+        "schedule": 30.0,  # 초 단위: 300초=5분
+    },
+}
+
