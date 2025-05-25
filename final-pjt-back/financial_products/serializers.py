@@ -1,35 +1,184 @@
-from rest_framework.mixins import CreateModelMixin
-from rest_framework.viewsets import GenericViewSet
+# serializers.py
 from rest_framework import serializers
-from .models import PriceData
+from .models import (
+    DepositProduct,
+    DepositProductOptions,
+    SavingProduct,
+    SavingProductOptions,
+)
 
-# 1. Bulk 처리를 담당할 ListSerializer
+# ────────────── 저장용 시리얼라이저 ──────────────
 
 
-class BulkPriceDataListSerializer(serializers.ListSerializer):
+class DepositProductBulkCreateListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
-        # PriceData 인스턴스 리스트 생성
-        objs = [PriceData(**item) for item in validated_data]
-        # 중복은 무시하고 bulk insert
-        PriceData.objects.bulk_create(objs, ignore_conflicts=True)
+        objs = [DepositProduct(**item) for item in validated_data]
+        DepositProduct.objects.bulk_create(objs, ignore_conflicts=True)
         return objs
 
-# 2. 각 항목을 검증할 ItemSerializer
 
-
-class PriceDataSerializer(serializers.ModelSerializer):
+class DepositProductCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PriceData
-        fields = ('symbol', 'timestamp', 'price')
-        # many=True 시 BulkPriceDataListSerializer 사용
-        list_serializer_class = BulkPriceDataListSerializer
+        model = DepositProduct
+        fields = (
+            "fin_co_no",
+            "kor_co_nm",
+            "fin_prdt_cd",
+            "fin_prdt_nm",
+            "join_way",
+            "mtrt_int",
+            "spcl_cnd",
+            "join_deny",
+            "join_member",
+            "etc_note",
+            "max_limit",
+            "dcls_strt_day",
+        )
+        list_serializer_class = DepositProductBulkCreateListSerializer
 
 
-# 3. 뷰(ViewSet 등)에서 사용 예시
+class DepositProductOptionsBulkCreateListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        objs = [DepositProductOptions(**item) for item in validated_data]
+        DepositProductOptions.objects.bulk_create(objs, ignore_conflicts=True)
+        return objs
 
 
-class PriceDataViewSet(CreateModelMixin, GenericViewSet):
-    queryset = PriceData.objects.all()
-    serializer_class = PriceDataSerializer
+class DepositProductOptionsCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DepositProductOptions
+        fields = (
+            "deposit_product_id",
+            # "fin_prdt_cd",
+            "intr_rate_type_nm",
+            "save_trm",
+            "intr_rate",
+            "intr_rate2",
+        )
+        list_serializer_class = DepositProductOptionsBulkCreateListSerializer
 
-    # POST로 [{...}, {...}, ...] 형태의 리스트를 받으면 bulk로 처리됩니다.
+
+class SavingProductBulkCreateListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        objs = [SavingProduct(**item) for item in validated_data]
+        SavingProduct.objects.bulk_create(objs, ignore_conflicts=True)
+        return objs
+
+
+class SavingProductCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavingProduct
+        fields = (
+            "fin_co_no",
+            "kor_co_nm",
+            "fin_prdt_cd",
+            "fin_prdt_nm",
+            "join_way",
+            "mtrt_int",
+            "spcl_cnd",
+            "join_deny",
+            "join_member",
+            "etc_note",
+            "max_limit",
+            "dcls_strt_day",
+        )
+        list_serializer_class = SavingProductBulkCreateListSerializer
+
+
+class SavingProductOptionsBulkCreateListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        objs = [SavingProductOptions(**item) for item in validated_data]
+        SavingProductOptions.objects.bulk_create(objs, ignore_conflicts=True)
+        return objs
+
+
+class SavingProductOptionsCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavingProductOptions
+        fields = (
+            "saving_product_id",
+            # "fin_prdt_cd",
+            "intr_rate_type_nm",
+            "rsrv_type_nm",
+            "save_trm",
+            "intr_rate",
+            "intr_rate2",
+        )
+        list_serializer_class = SavingProductOptionsBulkCreateListSerializer
+
+
+# ────────────── 출력용(Read-only) 시리얼라이저 ──────────────
+
+
+class DepositProductOptionsReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DepositProductOptions
+        fields = (
+            "deposit_product_id",
+            "intr_rate_type_nm",
+            "save_trm",
+            "intr_rate",
+            "intr_rate2",
+        )
+
+
+class DepositProductReadSerializer(serializers.ModelSerializer):
+    options = DepositProductOptionsReadSerializer(
+        source="depositproductoptions_set", many=True, read_only=True
+    )
+
+    class Meta:
+        model = DepositProduct
+        fields = (
+            "fin_co_no",
+            "kor_co_nm",
+            "fin_prdt_cd",
+            "fin_prdt_nm",
+            "join_way",
+            "mtrt_int",
+            "spcl_cnd",
+            "join_deny",
+            "join_member",
+            "etc_note",
+            "max_limit",
+            "dcls_strt_day",
+            "options",
+        )
+
+
+class SavingProductOptionsReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavingProductOptions
+        fields = (
+            "saving_product_id",
+            "intr_rate_type_nm",
+            "rsrv_type_nm",
+            "save_trm",
+            "intr_rate",
+            "intr_rate2",
+        )
+
+
+class SavingProductReadSerializer(serializers.ModelSerializer):
+    options = SavingProductOptionsReadSerializer(
+        source="savingproductoptions_set", many=True, read_only=True
+    )
+
+    class Meta:
+        model = SavingProduct
+        fields = (
+            "fin_co_no",
+            "kor_co_nm",
+            "fin_prdt_cd",
+            "fin_prdt_nm",
+            "join_way",
+            "mtrt_int",
+            "spcl_cnd",
+            "join_deny",
+            "join_member",
+            "etc_note",
+            "max_limit",
+            "dcls_strt_day",
+            "options",
+        )
+ 
