@@ -4,9 +4,9 @@
     <v-toolbar-items>
       <v-btn text :to="{name: 'home'}">Home</v-btn>
       <v-btn text :to="{name: 'home'}">예적금상품</v-btn>
-      <v-btn text :to="{name: 'home'}">현물상품</v-btn>
-      <v-btn text :to="{name: 'home'}">주식정보검색</v-btn>
-      <v-btn text :to="{name: 'home'}">은행지도</v-btn>
+      <v-btn text :to="{name: 'spotPrice'}">현물상품</v-btn>
+      <v-btn text :to="{name: 'videoStock'}">주식정보검색</v-btn>
+      <v-btn text :to="{name: 'bankMap'}">은행지도</v-btn>
       <v-btn text :to="{name: 'articles'}">커뮤니티</v-btn>
     </v-toolbar-items>
 

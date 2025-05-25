@@ -7,6 +7,7 @@ import vuetify from './plugins/vuetify'
 
 import App from './App.vue'
 import router from './router'
+import { Vue3Lottie } from 'vue3-lottie'
 
 const pinia = createPinia()
 const auth = useAuthStore(pinia)
@@ -20,5 +21,6 @@ const app = createApp(App)
 app.use(pinia)
 app.use(router)
 app.use(vuetify)
+app.component('Lottie', Vue3Lottie)
 app.mount('#app')
 
