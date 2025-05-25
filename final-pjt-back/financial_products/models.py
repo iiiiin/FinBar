@@ -27,9 +27,10 @@ class Stock(models.Model):
 
 
 class DepositProduct(models.Model):
+    top_fin_grp_no = models.CharField(max_length=100)
     fin_co_no = models.CharField(max_length=200)
     kor_co_nm = models.CharField(max_length=200)
-    fin_prdt_cd = models.CharField(max_length=200, unique=True)
+    fin_prdt_cd = models.CharField(max_length=200)
     fin_prdt_nm = models.CharField(max_length=200)
     join_way = models.CharField(max_length=200, null=True)
     mtrt_int = models.TextField(max_length=20000)
@@ -39,13 +40,20 @@ class DepositProduct(models.Model):
     etc_note = models.TextField(max_length=20000)
     max_limit = models.BigIntegerField(null=True)
     dcls_strt_day = models.DateField()
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["fin_prdt_cd", "fin_co_no"], name="unique_deposit_product"
+            )
+        ]
+
 
 
 class DepositProductOptions(models.Model):
     deposit_product = models.ForeignKey(
-        DepositProduct, to_field="fin_prdt_cd", on_delete=models.CASCADE
+        DepositProduct, on_delete=models.CASCADE
     )
-    # fin_prdt_cd = models.CharField(max_length=200)
+    fin_co_no = models.CharField(max_length=200)
     intr_rate_type_nm = models.CharField(max_length=200)
     save_trm = models.CharField(max_length=200)
     intr_rate = models.FloatField(null=True)
@@ -54,15 +62,16 @@ class DepositProductOptions(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["deposit_product", "intr_rate_type_nm", "save_trm"], name="unique_option_deposit"
+                fields=["fin_co_no","deposit_product", "intr_rate_type_nm", "save_trm"], name="unique_option_deposit"
             )
         ]
 
 
 class SavingProduct(models.Model):
+    top_fin_grp_no = models.CharField(max_length=100)
     fin_co_no = models.CharField(max_length=200)
     kor_co_nm = models.CharField(max_length=200)
-    fin_prdt_cd = models.CharField(max_length=200, unique=True)
+    fin_prdt_cd = models.CharField(max_length=200)
     fin_prdt_nm = models.CharField(max_length=200)
     join_way = models.CharField(max_length=200, null=True)
     mtrt_int = models.TextField(max_length=20000)
@@ -73,12 +82,18 @@ class SavingProduct(models.Model):
     max_limit = models.BigIntegerField(null=True)
     dcls_strt_day = models.DateField()
 
+    class Meta:
+            constraints = [
+                models.UniqueConstraint(
+                    fields=["fin_prdt_cd", "fin_co_no"], name="unique_saving_product"
+                )
+            ]
 
 class SavingProductOptions(models.Model):
     saving_product = models.ForeignKey(
-        SavingProduct, to_field="fin_prdt_cd", on_delete=models.CASCADE
+        SavingProduct, on_delete=models.CASCADE
     )
-    # fin_prdt_cd = models.CharField(max_length=200)
+    fin_co_no = models.CharField(max_length=200)
     intr_rate_type_nm = models.CharField(max_length=200)
     rsrv_type_nm = models.CharField(max_length=200)
     save_trm = models.CharField(max_length=200)
@@ -88,6 +103,6 @@ class SavingProductOptions(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["saving_product", "intr_rate_type_nm", "save_trm"], name="unique_option_saving"
+                fields=["fin_co_no","saving_product", "intr_rate_type_nm", "save_trm", "rsrv_type_nm"], name="unique_option_saving"
             )
         ]
