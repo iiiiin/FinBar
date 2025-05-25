@@ -181,3 +181,4 @@ class SavingProductReadSerializer(serializers.ModelSerializer):
             "dcls_strt_day",
             "options",
         )
+ 
