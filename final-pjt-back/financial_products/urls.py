@@ -1,8 +1,10 @@
 from django.urls import path
+from rest_framework.routers import DefaultRouter
 from . import views
 
-urlpatterns = [
-    # path('add/', views.upload_stocks),
-    path('depositProducts/', views.deposit_products),
-    path('savingProducts/', views.saving_products),
-]
+
+router = DefaultRouter()
+router.register(r'deposits', views.DepositProductViewSet, basename='deposit')
+router.register(r'savings',  views.SavingProductViewSet,  basename='saving')
+
+urlpatterns = router.urls

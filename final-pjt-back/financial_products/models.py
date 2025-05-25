@@ -24,3 +24,70 @@ class Stock(models.Model):
     )
     #  상장주식수 ( 중요도  : 상 )
     listed_shares = models.BigIntegerField()
+
+
+class DepositProduct(models.Model):
+    fin_co_no = models.CharField(max_length=100)
+    kor_co_nm = models.CharField(max_length=100)
+    fin_prdt_cd = models.CharField(max_length=100, unique=True)
+    fin_prdt_nm = models.CharField(max_length=100)
+    join_way = models.CharField(max_length=100)
+    mtrt_int = models.TextField(max_length=2000)
+    spcl_cnd = models.TextField(max_length=2000)
+    join_deny = models.CharField(max_length=100)
+    join_member = models.CharField(max_length=100)
+    etc_note = models.TextField(max_length=2000)
+    max_limit = models.BigIntegerField(null=True)
+    dcls_strt_day = models.DateField()
+
+
+class DepositProductOptions(models.Model):
+    deposit_product = models.ForeignKey(
+        DepositProduct, to_field="fin_prdt_cd", on_delete=models.CASCADE
+    )
+    fin_prdt_cd = models.CharField(max_length=100)
+    intr_rate_type_nm = models.CharField(max_length=100)
+    save_trm = models.CharField(max_length=100)
+    intr_rate = models.FloatField()
+    intr_rate2 = models.FloatField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["intr_rate_type_nm", "save_trm"], name="unique_option_deposit"
+            )
+        ]
+
+
+class SavingProduct(models.Model):
+    fin_co_no = models.CharField(max_length=100)
+    kor_co_nm = models.CharField(max_length=100)
+    fin_prdt_cd = models.CharField(max_length=100, unique=True)
+    fin_prdt_nm = models.CharField(max_length=100)
+    join_way = models.CharField(max_length=100)
+    mtrt_int = models.TextField(max_length=2000)
+    spcl_cnd = models.TextField(max_length=2000)
+    join_deny = models.CharField(max_length=100)
+    join_member = models.CharField(max_length=100)
+    etc_note = models.TextField(max_length=2000)
+    max_limit = models.BigIntegerField(null=True)
+    dcls_strt_day = models.DateField()
+
+
+class SavingProductOptions(models.Model):
+    saving_product = models.ForeignKey(
+        SavingProduct, to_field="fin_prdt_cd", on_delete=models.CASCADE
+    )
+    fin_prdt_cd = models.CharField(max_length=100)
+    intr_rate_type_nm = models.CharField(max_length=100)
+    rsrv_type_nm = models.CharField(max_length=100)
+    save_trm = models.CharField(max_length=100)
+    intr_rate = models.FloatField()
+    intr_rate2 = models.FloatField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["intr_rate_type_nm", "save_trm"], name="unique_option_saving"
+            )
+        ]
