@@ -42,17 +42,20 @@ def _collect_all(api_url: str, top_fin_grp_no: str):
 
     return base_list, option_list
 
-
 def _upsert_generic(model, unique_fields: list, update_fields: list, records: list[dict]):
     """
     psycopg2 ON CONFLICT Upsert 공통 로직
-      - model: Django 모델 클래스
-      - unique_fields: ON CONFLICT에 사용할 필드 리스트
-      - update_fields: 충돌 시 업데이트할 필드 리스트
-      - records: 모델 필드명 키를 가진 dict 리스트
+     - 동일 unique_fields 조합의 레코드는 마지막 값으로 덮어쓰도록 중복 제거
     """
     if not records:
         return
+
+    # 1) unique_fields 기준으로 중복 제거 (마지막 레코드 우선)
+    deduped = {}
+    for rec in records:
+        key = tuple(rec[field] for field in unique_fields)
+        deduped[key] = rec
+    records = list(deduped.values())
 
     table = model._meta.db_table
     cols  = list(records[0].keys())
@@ -69,6 +72,8 @@ def _upsert_generic(model, unique_fields: list, update_fields: list, records: li
     with transaction.atomic():
         with connection.cursor() as cur:
             execute_values(cur, insert_sql, values)
+
+
 
 
 # ─── Deposit 전용 Upsert ───
@@ -102,10 +107,9 @@ def upsert_deposit_products(model, data_list: list[dict]):
 def upsert_deposit_options(data_list: list[dict]):
     opt_recs = []
     for opt in data_list:
+        # (1) ForeignKey에 실제 DepositProduct.id를 매핑하는 로직이 필요할 수 있습니다.
         opt_recs.append({
-            # ForeignKey 필드에 company code 삽입
-            "deposit_product":    opt["fin_co_no"],
-            "fin_prdt_cd":        opt["fin_prdt_cd"],
+            "deposit_product_id": opt["fin_prdt_cd"],  
             "intr_rate_type_nm":  opt["intr_rate_type_nm"],
             "save_trm":           opt["save_trm"],
             "intr_rate":          opt["intr_rate"],
@@ -114,11 +118,11 @@ def upsert_deposit_options(data_list: list[dict]):
 
     _upsert_generic(
         model=DepositProductOptions,
-        unique_fields=["intr_rate_type_nm", "save_trm"],
+        # (2) deposit_product_id를 포함해서 상품별로 중복 허용
+        unique_fields=["deposit_product_id", "intr_rate_type_nm", "save_trm"],
         update_fields=["intr_rate", "intr_rate2"],
         records=opt_recs
     )
-
 
 # ─── Saving 전용 Upsert ───
 
@@ -127,14 +131,15 @@ def upsert_saving_products(model, data_list: list[dict]):
     upsert_deposit_products(model, data_list)
 
 
+
+
 def upsert_saving_options(data_list: list[dict]):
     opt_recs = []
     for opt in data_list:
         opt_recs.append({
-            "saving_product":     opt["fin_co_no"],
-            "fin_prdt_cd":        opt["fin_prdt_cd"],
-            "intr_rate_type_nm":  opt["intr_rate_type_nm"],
-            "rsrv_type_nm":       opt["rsrv_type_nm"],
+            "saving_product_id": opt["fin_prdt_cd"],
+            "intr_rate_type_nm": opt["intr_rate_type_nm"],
+            "rsrv_type_nm":      opt["rsrv_type_nm"],
             "save_trm":           opt["save_trm"],
             "intr_rate":          opt["intr_rate"],
             "intr_rate2":         opt["intr_rate2"],
@@ -142,11 +147,10 @@ def upsert_saving_options(data_list: list[dict]):
 
     _upsert_generic(
         model=SavingProductOptions,
-        unique_fields=["intr_rate_type_nm", "save_trm"],
+        unique_fields=["saving_product_id", "intr_rate_type_nm", "save_trm"],
         update_fields=["rsrv_type_nm", "intr_rate", "intr_rate2"],
         records=opt_recs
     )
-
 
 # ─── 전체 수집 & Upsert 트리거 ───
 

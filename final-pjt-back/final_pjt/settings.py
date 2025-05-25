@@ -246,8 +246,13 @@ ACCOUNT_SIGNUP_FIELDS_CONFIG = {
 
 # DB 데이터 저장 작업 자동화
 CELERY_BEAT_SCHEDULE = {
-    "fetch-upsert-every-1hour": {
-        "task": "financial_products.tasks.periodic_fetch_and_upsert",
-        "schedule": 3600.0,  # 초 단위: 300초=5분
+    "fetch-deposit": {
+        "task": "financial_products.tasks.task_upsert_deposit",
+        "schedule": 30.0,  # 초 단위: 300초=5분
+    },
+    "fetch-saving": {
+        "task": "financial_products.tasks.task_upsert_saving",
+        "schedule": 30.0,  # 초 단위: 300초=5분
     },
 }
+

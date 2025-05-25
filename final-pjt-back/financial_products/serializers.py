@@ -48,8 +48,8 @@ class DepositProductOptionsCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepositProductOptions
         fields = (
-            "deposit_product",
-            "fin_prdt_cd",
+            "deposit_product_id",
+            # "fin_prdt_cd",
             "intr_rate_type_nm",
             "save_trm",
             "intr_rate",
@@ -96,8 +96,8 @@ class SavingProductOptionsCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = SavingProductOptions
         fields = (
-            "saving_product",
-            "fin_prdt_cd",
+            "saving_product_id",
+            # "fin_prdt_cd",
             "intr_rate_type_nm",
             "rsrv_type_nm",
             "save_trm",
@@ -114,7 +114,7 @@ class DepositProductOptionsReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepositProductOptions
         fields = (
-            "fin_prdt_cd",
+            "deposit_product_id",
             "intr_rate_type_nm",
             "save_trm",
             "intr_rate",
@@ -150,7 +150,7 @@ class SavingProductOptionsReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = SavingProductOptions
         fields = (
-            "fin_prdt_cd",
+            "saving_product_id",
             "intr_rate_type_nm",
             "rsrv_type_nm",
             "save_trm",
