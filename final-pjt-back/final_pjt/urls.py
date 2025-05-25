@@ -44,6 +44,7 @@ urlpatterns = [
     path("articles/", include("articles.urls")),
     path("products/", include("financial_products.urls")),
     path("youtube/", include("search_youtubes.urls")),
+    path("map/", include("maps.urls")),
 ]
 
 

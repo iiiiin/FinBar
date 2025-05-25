@@ -33,7 +33,7 @@ environ.Env.read_env(env_file=os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = env("SECRET_KEY")
 FINLIFE_API_KEY = env("FINLIFE_API_KEY")
 YOUTUBE_KEY = env("YOUTUBE_KEY")
-
+KAKAO_REST_API_KEY = env("KAKAO_REST_API_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "accounts",
     "financial_products",
     "search_youtubes",
+    "maps",
     "django_celery_results",
     "django_celery_beat",
     "drf_yasg",
