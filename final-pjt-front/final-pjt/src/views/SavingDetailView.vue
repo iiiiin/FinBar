@@ -42,7 +42,7 @@ import NavigationBar from '@/components/NavigationBar.vue'
 import Title from '@/components/Title.vue'
 
 export default {
-  name: 'DepositDetailView',
+  name: 'SavingDetailView',
   components: { NavigationBar, Title },
   data() {
     return {
@@ -64,7 +64,7 @@ export default {
     this.loading = true
     try {
       const id = this.$route.params.id
-      const res = await axios.get(`http://127.0.0.1:8000/products/deposits/${id}/`)
+      const res = await axios.get(`http://127.0.0.1:8000/products/savings/${id}/`)
       this.product = res.data
       // console.log(res)
     } catch (e) {
