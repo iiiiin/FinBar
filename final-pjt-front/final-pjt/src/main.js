@@ -9,15 +9,16 @@ import App from './App.vue'
 import router from './router'
 import { Vue3Lottie } from 'vue3-lottie'
 
+
 const pinia = createPinia()
 const auth = useAuthStore(pinia)
+
 
 if (auth.token) {
     axios.defaults.headers.common['Authorization'] = `Token ${auth.token}`
   }
 
 const app = createApp(App)
-
 
 
 

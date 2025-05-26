@@ -59,6 +59,7 @@
       class="elevation-1"
       :items-per-page="perPage"
       item-key="key"
+      hide-default-footer=""
     >
       <!-- 커스텀 헤더 슬롯: props.headers로 헤더 행 렌더링 -->
       <template #header="{ props }">

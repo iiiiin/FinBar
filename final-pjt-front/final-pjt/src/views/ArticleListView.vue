@@ -14,20 +14,8 @@
       </v-col>
     </v-row>
 
-    <!-- 검색창 + 검색 버튼 -->
-    <v-row align="center" class="mb-4" no-gutters>
-      <v-col cols="12" sm="9" md="10" class="pr-2">
-        <SearchBar v-model="q" @search="fetchArticles" />
-      </v-col>
-      <v-col cols="12" sm="3" md="2">
-        <v-btn block color="primary" @click="fetchArticles">
-          검색
-        </v-btn>
-      </v-col>
-    </v-row>
-
     <!-- 글 작성 버튼 -->
-    <v-row>
+    <v-row v-if="isAuth">
       <v-col cols="12" class="text-right mb-4">
         <v-btn color="primary" @click="goCreate">글 작성</v-btn>
       </v-col>
@@ -53,11 +41,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
-import SearchBar     from '@/components/SearchBar.vue'
 import PostList      from '@/components/PostList.vue'
 import Pagination    from '@/components/Pagination.vue'
 import Title         from '@/components/Title.vue'
@@ -68,6 +56,8 @@ const q          = ref('')
 const articles   = ref([])
 const page       = ref(1)
 const totalPages = ref(1)
+const auth       = useAuthStore()
+const isAuth     = computed(() => auth.isLoggedIn)
 
 // 게시글 목록 조회
 async function fetchArticles() {

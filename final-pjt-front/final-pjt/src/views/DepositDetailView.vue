@@ -8,6 +8,19 @@
       </v-col>
     </v-row>
 
+    <!-- 북마크 버튼 -->
+    <v-row class="mb-4">
+      <v-col cols="12" class="text-right">
+        <v-btn
+          :color="isBookmarked ? 'error' : 'primary'"
+          @click="toggleBookmark"
+          :loading="bookmarkLoading"
+        >
+          {{ isBookmarked ? '북마크 취소' : '북마크 추가' }}
+        </v-btn>
+      </v-col>
+    </v-row>
+
     <v-card elevation="2" class="mb-6">
       <v-card-text>
         <div><strong>은행명:</strong> {{ product.kor_co_nm }}</div>
@@ -33,6 +46,14 @@
         {{ item.intr_rate }}%
       </template>
     </v-data-table>
+
+    <!-- Vuetify Snackbar for notifications -->
+    <v-snackbar v-model="snackbar.show" :timeout="snackbar.timeout" top right>
+      {{ snackbar.message }}
+      <template #action>
+        <v-btn text @click="snackbar.show = false">닫기</v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -48,6 +69,14 @@ export default {
     return {
       product: {},
       loading: false,
+      isBookmarked: false,
+      bookmarkId: null,
+      bookmarkLoading: false,
+      snackbar: {
+        show: false,
+        message: '',
+        timeout: 3000
+      }
     }
   },
   computed: {
@@ -62,16 +91,81 @@ export default {
   },
   async mounted() {
     this.loading = true
+    const id = this.$route.params.id
     try {
-      const id = this.$route.params.id
       const res = await axios.get(`http://127.0.0.1:8000/products/deposits/${id}/`)
       this.product = res.data
-      // console.log(res)
+      await this.checkBookmark()
     } catch (e) {
       console.error(e)
-      this.$toast.error('상세정보를 불러오던 중 오류가 발생했습니다.')
+      this.notify('상세정보를 불러오던 중 오류가 발생했습니다.')
     } finally {
       this.loading = false
+    }
+  },
+  methods: {
+    async checkBookmark() {
+      try {
+        const res = await axios.get('http://127.0.0.1:8000/bookmarks/deposits/')
+        const list = Array.isArray(res.data) ? res.data : (res.data.results || [])
+        const bookmark = list.find(b => b.deposit_product && b.deposit_product.id === this.product.id)
+        if (bookmark) {
+          this.isBookmarked = true
+          this.bookmarkId = bookmark.id
+        }
+      } catch (e) {
+        console.warn('북마크 조회 실패', e)
+      }
+    },
+    watch: {
+  '$route.params.id': {
+    immediate: true,
+    handler(newId) {
+      this.resetBookmarkState()
+      this.loadProduct(newId)
+    }
+  }
+},
+resetBookmarkState() {
+    this.isBookmarked = false
+    this.bookmarkId = null
+  },
+  async loadProduct(id) {
+    // 상품 fetch 후
+    await this.checkBookmark()
+  },
+    async toggleBookmark() {
+      if (this.bookmarkLoading) return
+      this.bookmarkLoading = true
+      const id = this.$route.params.id
+
+      try {
+        if (!this.isBookmarked) {
+          const res = await axios.post(
+            'http://127.0.0.1:8000/bookmarks/deposits/',
+            { deposit_product_id: id }
+          )
+          this.isBookmarked = true
+          this.bookmarkId = res.data.id
+          this.notify('북마크에 추가되었습니다.')
+        } else {
+          await axios.delete(
+            `http://127.0.0.1:8000/bookmarks/deposits/${this.bookmarkId}/`
+          )
+          this.isBookmarked = false
+          this.bookmarkId = null
+          this.notify('북마크가 취소되었습니다.')
+        }
+      } catch (e) {
+        console.error('북마크 처리 오류:', e.response?.data || e)
+        this.notify('북마크 처리 중 오류가 발생했습니다.')
+      } finally {
+        this.bookmarkLoading = false
+      }
+    },
+    notify(message) {
+      this.snackbar.message = message
+      this.snackbar.show = true
     }
   }
 }
