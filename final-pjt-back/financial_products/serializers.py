@@ -1,4 +1,5 @@
 # serializers.py
+from .models import Stock
 from rest_framework import serializers
 from .models import (
     DepositProduct,
@@ -181,4 +182,81 @@ class SavingProductReadSerializer(serializers.ModelSerializer):
             "dcls_strt_day",
             "options",
         )
- 
+
+ # stocks/serializers.py
+
+
+class StockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Stock
+        fields = "__all__"
+# ---------------추천 응답 시리얼라이저 --------------------------
+
+# suggests/serializers.py
+
+
+class DepositOptionSerializer(serializers.Serializer):
+    save_trm = serializers.CharField()
+    intr_rate2 = serializers.FloatField()
+
+
+class SavingOptionSerializer(serializers.Serializer):
+    save_trm = serializers.CharField()
+    intr_rate2 = serializers.FloatField()
+
+
+class DepositProductRecommendationSerializer(serializers.Serializer):
+    type = serializers.CharField(default="예금")
+    name = serializers.CharField(source="fin_prdt_nm")
+    bank = serializers.CharField(source="kor_co_nm")
+    product_code = serializers.CharField(source="fin_prdt_cd")
+    category = serializers.CharField(default="예금")
+    options = DepositOptionSerializer(many=True)
+
+
+class SavingProductRecommendationSerializer(serializers.Serializer):
+    type = serializers.CharField(default="적금")
+    name = serializers.CharField(source="fin_prdt_nm")
+    bank = serializers.CharField(source="kor_co_nm")
+    product_code = serializers.CharField(source="fin_prdt_cd")
+    category = serializers.CharField(default="적금")
+    options = SavingOptionSerializer(many=True)
+
+
+# 통합 응답 Serializer
+class CombinedProductRecommendationSerializer(serializers.Serializer):
+    recommendation_type = serializers.ChoiceField(choices=["예적금", "주식"])
+    required_return = serializers.FloatField()
+    items = serializers.ListField()
+
+
+class StockRecommendationSerializer(serializers.Serializer):
+    type = serializers.CharField(default="주식")
+    name = serializers.CharField()
+    code = serializers.CharField()
+    market = serializers.CharField()
+    sector = serializers.CharField()
+    reason = serializers.CharField()
+
+
+# suggests/serializers.py
+
+
+class ProductOptionSerializer(serializers.Serializer):
+    save_trm = serializers.CharField()
+    intr_rate2 = serializers.FloatField()
+
+
+class ProductRecommendationSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=["예금", "적금"])
+    name = serializers.CharField()
+    bank = serializers.CharField()
+    product_code = serializers.CharField()
+    category = serializers.CharField()
+    options = ProductOptionSerializer(many=True)
+
+
+class DepositSavingRecommendationResponseSerializer(serializers.Serializer):
+    recommendation_type = serializers.ChoiceField(choices=["예적금"])
+    required_return = serializers.FloatField()
+    items = ProductRecommendationSerializer(many=True)

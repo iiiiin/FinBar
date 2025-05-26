@@ -1,5 +1,7 @@
+from .models import StockRecommendation
 from rest_framework import serializers
-from .models import InvestmentQuestion, InvestmentChoice, InvestmentProfile
+from .models import InvestmentQuestion, InvestmentChoice
+from accounts.models import InvestmentGoal
 
 
 class InvestmentChoiceSerializer(serializers.ModelSerializer):
@@ -45,3 +47,36 @@ class InvestmentAnswerSerializer(serializers.Serializer):
             child=serializers.IntegerField()
         )
     )
+
+    def validate_answers(self, value):
+        seen = set()
+        for ans in value:
+            qid = ans.get("question_id")
+            cid = ans.get("choice_id")
+            if qid is None or cid is None:
+                raise serializers.ValidationError(
+                    "question_id와 choice_id는 모두 필요합니다.")
+            if qid in seen:
+                raise serializers.ValidationError(f"질문 ID {qid}에 중복 응답이 있습니다.")
+            seen.add(qid)
+        return value
+
+
+# suggests/serializers.py
+
+
+class StockRecommendationSaveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StockRecommendation
+        fields = ("id", "name", "code", "market",
+                  "sector", "reason", "recommended_at")
+
+
+class StockRecommendationCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StockRecommendation
+        fields = ("name", "code", "market", "sector", "reason")
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        return StockRecommendation.objects.create(user=user, **validated_data)

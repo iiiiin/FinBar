@@ -1,0 +1,125 @@
+[
+    {
+        "model": "accounts.user",
+        "pk": 4,
+        "fields": {
+            "username": "user4",
+            "password": "pbkdf2_sha256$260000$dummy$hash",
+            "age": 30,
+            "nickname": "user_4"
+        }
+    },
+    {
+        "model": "authtoken.token",
+        "pk": 1,
+        "fields": {
+            "user": 4,
+            "created": "2025-05-25",
+            "key": "user4token1234567890abcdef"
+        }
+    },
+    {
+        "model": "accounts.investmentprofile",
+        "pk": 1,
+        "fields": {
+            "user": 4,
+            "total_score": 6,
+            "risk_type": "안정형",
+            "evaluated_at": "2025-05-25"
+        }
+    },
+    {
+        "model": "accounts.investmentgoal",
+        "pk": 1,
+        "fields": {
+            "user": 4,
+            "current_asset": 1000,
+            "target_asset": 1100,
+            "target_years": 3,
+            "preferred_period": 6,
+            "expected_annual_return": 3.2
+        }
+    },
+    {
+        "model": "accounts.user",
+        "pk": 5,
+        "fields": {
+            "username": "user5",
+            "password": "pbkdf2_sha256$260000$dummy$hash",
+            "age": 35,
+            "nickname": "user_5"
+        }
+    },
+    {
+        "model": "authtoken.token",
+        "pk": 2,
+        "fields": {
+            "user": 5,
+            "created": "2025-05-25",
+            "key": "user5token1234567890abcdef"
+        }
+    },
+    {
+        "model": "accounts.investmentprofile",
+        "pk": 2,
+        "fields": {
+            "user": 5,
+            "total_score": 10,
+            "risk_type": "위험중립형",
+            "evaluated_at": "2025-05-25"
+        }
+    },
+    {
+        "model": "accounts.investmentgoal",
+        "pk": 2,
+        "fields": {
+            "user": 5,
+            "current_asset": 1000,
+            "target_asset": 1250,
+            "target_years": 4,
+            "preferred_period": 12,
+            "expected_annual_return": 5.7
+        }
+    },
+    {
+        "model": "accounts.user",
+        "pk": 6,
+        "fields": {
+            "username": "user6",
+            "password": "pbkdf2_sha256$260000$dummy$hash",
+            "age": 42,
+            "nickname": "user_6"
+        }
+    },
+    {
+        "model": "authtoken.token",
+        "pk": 3,
+        "fields": {
+            "user": 6,
+            "created": "2025-05-25",
+            "key": "user6token1234567890abcdef"
+        }
+    },
+    {
+        "model": "accounts.investmentprofile",
+        "pk": 3,
+        "fields": {
+            "user": 6,
+            "total_score": 20,
+            "risk_type": "공격투자형",
+            "evaluated_at": "2025-05-25"
+        }
+    },
+    {
+        "model": "accounts.investmentgoal",
+        "pk": 3,
+        "fields": {
+            "user": 6,
+            "current_asset": 1000,
+            "target_asset": 2000,
+            "target_years": 5,
+            "preferred_period": 36,
+            "expected_annual_return": 14.9
+        }
+    }
+]
