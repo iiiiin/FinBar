@@ -14,24 +14,14 @@
       </v-col>
     </v-row>
 
-    <!-- 검색창 + 검색 버튼 -->
-    <v-row align="center" class="mb-4" no-gutters>
-      <v-col cols="12" sm="9" md="10" class="pr-2">
-        <SearchBar v-model="q" @search="fetchArticles" />
-      </v-col>
-      <v-col cols="12" sm="3" md="2">
-        <v-btn block color="primary" @click="fetchArticles">
-          검색
-        </v-btn>
-      </v-col>
-    </v-row>
 
     <!-- 글 작성 버튼 -->
-    <v-row>
+    <v-row v-if="isAuth">
       <v-col cols="12" class="text-right mb-4">
         <v-btn color="primary" @click="goCreate">글 작성</v-btn>
       </v-col>
     </v-row>
+
 
     <!-- 게시글 리스트 -->
     <v-row>
@@ -53,8 +43,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore }  from '@/stores/auth'
 import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
 import SearchBar     from '@/components/SearchBar.vue'
@@ -68,15 +59,15 @@ const q          = ref('')
 const articles   = ref([])
 const page       = ref(1)
 const totalPages = ref(1)
+const auth = useAuthStore()
+const isAuth     = computed(() => auth.isLoggedIn)
 
 // 게시글 목록 조회
 async function fetchArticles() {
   try {
     const { data } = await axios.get('http://127.0.0.1:8000/articles/', {
-      // params: { search: q.value, page: page.value }
     })
     articles.value = data
-    // totalPages.value = data.total_pages
   } catch (error) {
     console.error(error)
   }
@@ -84,7 +75,8 @@ async function fetchArticles() {
 
 // 상세 페이지로 이동
 function goDetail(post) {
-  router.push({ name: 'articleDetail', params: { id : post.id }})
+  console.log(post.id)
+  router.push({ name: 'articleDetail', params: { id: post.id }})
 }
 
 // 페이지 변경
@@ -102,5 +94,40 @@ onMounted(fetchArticles)
 </script>
 
 <style scoped>
-/* 필요 시 컨테이너 중앙 정렬 이외 추가 스타일 작성 */
+/* Vuetify v-btn 기본 스타일 오버라이드 */
+::v-deep .v-btn {
+  background-color: #ffffff !important;       /* 흰 배경 */
+  color: #000000 !important;                  /* 검은 글씨 */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important; /* 연한 회색 그림자 */
+  border: none !important;                    /* 테두리 제거 */
+}
+
+/* Hover 시 그림자만 살짝 강조 */
+::v-deep .v-btn:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* 선택된(primary) 혹은 text prop 은 그대로 두고, 색만 바뀌게 */
+::v-deep .v-btn--text {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: #000000 !important;
+}
+/* v-alert 전체 스타일 오버라이드 */
+::v-deep .v-alert {
+  background-color: #ffffff !important;       /* 흰 배경 */
+  color: #000000 !important;                  /* 검은 글씨 */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important; /* 연한 회색 그림자 */
+  border: none !important;                    /* 테두리 제거 */
+}
+
+/* colored-border, border-start 등으로 들어온 좌측 컬러바도 제거 */
+::v-deep .v-alert--border-start {
+  border-left: none !important;
+}
+
+/* 만약 다른 border 속성이 붙는 경우에도 완전 제거 */
+::v-deep .v-alert {
+  border-width: 0 !important;
+}
 </style>

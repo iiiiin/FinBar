@@ -14,9 +14,10 @@
           v-for="(slide, i) in slides"
           :key="i"
         >
+        <router-link :to="{ name : slide.link }" class="carousel-link">
           <!-- 상하 2분할: flex 비율 조정 -->
           <v-row
-            class="fill-height d-flex flex-column"
+            class="fill-height d-flex flex-column slide-content"
             align="center"
             justify="center"
           >
@@ -37,7 +38,9 @@
               <p class="text-body-1">{{ slide.description }}</p>
             </v-col>
           </v-row>
+        </router-link>
         </v-carousel-item>
+      
       </v-carousel>
     </div>
   </v-container>
@@ -49,24 +52,29 @@ import { ref } from 'vue'
 
 const slides = ref([
   {
-    image: '/images/money_fueru_dollar.png',
-    title: '예/적금 상품 비교',
-    description: '나에게 맞는 금융 상품을 찾아 비교해보세요.'
+    image: '/images/balance.png',
+    title: '금융 상품 비교',
+    description: '나에게 맞는 금융 상품을 비교해보세요.',
+    link: 'productList'
   },
   {
-    image: '/images/money_fueru_dollar.png',
+    image: '/images/gold.png',
     title: '현물 상품 가격 변동',
-    description: '금/은 현물의 시세 변동 추이를 확인해보세요.'
+    description: '금/은 현물의 시세 추이를 확인해보세요.',
+    link: 'spotPrice'
   },
   {
-    image: '/images/money_fueru_dollar.png',
+    image: '/images/finder.png',
     title: '관심 종목 정보 검색',
-    description: '관심 주식에 대한 영상 정보를 검색해보세요.'
+    description: '관심 주식에 대한 정보를 검색해보세요.',
+    link: 'videoStock'
   },
   {
-    image: '/images/money_fueru_dollar.png',
+    // image: '/images/mappin.png',
+    image: '/images/bank.png',
     title: '은행 위치 검색',
-    description: '주변 은행 위치를 찾아보세요.'
+    description: '주변 은행 위치를 찾아보세요.',
+    link: 'bankMap'
   }
 ])
 </script>
@@ -82,7 +90,10 @@ const slides = ref([
   background-position: center center;
   background-size: contain;
 }
-
+.slide-content {
+  transform: scale(0.7);
+  transform-origin: center center;
+}
 .menu-carousel {
   position: absolute;
   /* 아래로 조금 더 내리기 */
@@ -92,7 +103,14 @@ const slides = ref([
   width: 45%;   /* 약간 축소 */
   height: 60%;  /* 약간 축소 */
 }
-
+::v-deep .carousel-link,
+::v-deep .carousel-link:hover,
+::v-deep .carousel-link:focus,
+::v-deep .carousel-link *,
+::v-deep .carousel-link *:hover {
+  color: inherit !important;
+  text-decoration: none !important;
+}
 /* 이미지 영역을 아래로 조금 내림 */
 .image-col {
   margin-top: 10%;

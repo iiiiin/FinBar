@@ -91,6 +91,7 @@
         />
       </v-col>
     </v-row>
+    <PlaceFooter src="/images/plate.png" alt="메뉴접시" />
   </v-container>
 </template>
 
@@ -105,6 +106,7 @@ import { read, utils } from 'xlsx'
 
 import NavigationBar from '@/components/NavigationBar.vue'
 import Title         from '@/components/Title.vue'
+import PlaceFooter from '@/components/PlaceFooter.vue'
 
 const pageTitle = '금/은 가격 변동'
 const selected  = ref('gold')

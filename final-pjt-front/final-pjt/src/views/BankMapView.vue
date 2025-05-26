@@ -15,54 +15,59 @@
       </v-col>
     </v-row>
 
-    <!-- 필터 + 지도 영역 -->
-    <v-row>
-      <v-col cols="12" md="3">
-        <!-- 시/도 선택 -->
-        <v-select
-          v-model="selectedSido"
-          :items="sidoList"
-          label="시/도 선택"
-          dense
-          @update:model-value="onSidoChange"
-        />
+    <!-- 배경 이미지 영역 시작 -->
+    <div class="map-background">
+      <!-- 필터 + 지도 영역 -->
+      <v-row>
+        <v-col cols="12" md="3">
+          <!-- 시/도 선택 -->
+          <v-select
+            v-model="selectedSido"
+            :items="sidoList"
+            label="시/도 선택"
+            dense
+            @update:model-value="onSidoChange"
+          />
 
-        <!-- 구/군 선택 -->
-        <v-select
-          v-if="selectedSido"
-          v-model="selectedGugun"
-          :items="gugunList"
-          label="구/군 선택"
-          dense
-          @update:model-value="onGugunChange"
-        />
+          <!-- 구/군 선택 -->
+          <v-select
+            v-if="selectedSido"
+            v-model="selectedGugun"
+            :items="gugunList"
+            label="구/군 선택"
+            dense
+            @update:model-value="onGugunChange"
+          />
 
-        <!-- 은행 선택 -->
-        <v-select
-          v-if="selectedGugun"
-          v-model="selectedBank"
-          :items="bankOptions"
-          label="은행 선택"
-          dense
-        />
+          <!-- 은행 선택 -->
+          <v-select
+            v-if="selectedGugun"
+            v-model="selectedBank"
+            :items="bankOptions"
+            label="은행 선택"
+            dense
+          />
 
-        <!-- 검색 버튼 -->
-        <v-btn
-          block
-          color="primary"
-          class="mt-4"
-          @click="onSearch"
-          :disabled="!selectedBank"
-        >
-          검색
-        </v-btn>
-      </v-col>
+          <!-- 검색 버튼 -->
+          <v-btn
+            block
+            color="primary"
+            class="mt-4"
+            @click="onSearch"
+            :disabled="!selectedBank"
+          >
+            검색
+          </v-btn>
+        </v-col>
 
-      <!-- 지도 렌더링 영역 -->
-      <v-col cols="12" md="9">
-        <div id="map" class="map-container"></div>
-      </v-col>
-    </v-row>
+        <!-- 지도 렌더링 영역 -->
+        <v-col cols="12" md="9">
+          <div id="map" class="map-container"></div>
+        </v-col>
+      </v-row>
+    </div>
+    <!-- 배경 이미지 영역 끝 -->
+
   </v-container>
 </template>
 
@@ -145,9 +150,11 @@ function onGugunChange(code) {
 function initMap(lat, lng) {
   kakao.maps.load(() => {
     const container = document.getElementById('map')
-    kakaoMap = new kakao.maps.Map(container, { center: new kakao.maps.LatLng(lat, lng), level: 4 })
+    kakaoMap = new kakao.maps.Map(container, {
+      center: new kakao.maps.LatLng(lat, lng),
+      level: 4
+    })
     placesService = new kakao.maps.services.Places(kakaoMap)
-    // 기존 마커 제거
     markers.forEach(m => m.setMap(null))
     markers = []
   })
@@ -157,7 +164,6 @@ function initMap(lat, lng) {
 onMounted(async () => {
   await loadRegions()
   await loadKakaoMapSdk()
-  // 초기 위치 가져오기
   let lat = 37.5665, lng = 126.9780
   try {
     const res = await fetch('http://127.0.0.1:8000/map/', { method: 'POST' })
@@ -186,7 +192,6 @@ function onSearch() {
 /** 마커 표시 및 제거 */
 function placeMarkers() {
   if (!kakaoMap || banks.value.length === 0) return
-  // 이전 마커 제거
   markers.forEach(m => m.setMap(null))
   markers = []
 
@@ -202,9 +207,30 @@ function placeMarkers() {
 </script>
 
 <style scoped>
+/* Vuetify v-btn 기본 스타일 오버라이드 */
+::v-deep .v-btn {
+  background-color: #ffffff !important;       /* 흰 배경 */
+  color: #000000 !important;                  /* 검은 글씨 */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important; /* 연한 회색 그림자 */
+  border: none !important;                    /* 테두리 제거 */
+}
+
+/* Hover 시 그림자만 살짝 강조 */
+::v-deep .v-btn:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* 선택된(primary) 혹은 text prop 은 그대로 두고, 색만 바뀌게 */
+::v-deep .v-btn--text {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: #000000 !important;
+}
 .map-container {
   width: 100%;
   height: 400px;
   border: 1px solid #ddd;
 }
+
+
 </style>
