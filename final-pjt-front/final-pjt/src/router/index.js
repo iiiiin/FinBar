@@ -12,6 +12,7 @@ import ProfileEditView from '@/views/ProfileEditView.vue'
 import SignupView from '@/views/SignupView.vue'
 import SpotPriceView from '@/views/SpotPriceView.vue'
 import StockVideoView from '@/views/StockVideoView.vue'
+import VideoDetailView from '@/views/videoDetailView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -72,11 +73,17 @@ const router = createRouter({
       name: 'error',
       component: ErrorView,
     },
-    // 주식정보(영상)검색 페이지
+    // 주식정보(영상) 검색 페이지
     {
       path: '/videostock',
       name: 'videoStock',
       component: StockVideoView,
+    },
+    // 주식정보(영상) 상세 페이지
+    {
+      path: '/videostock/:id',
+      name: 'videoDetail',
+      component: VideoDetailView,
     },
     // 주변 은행 검색 페이지
     {
