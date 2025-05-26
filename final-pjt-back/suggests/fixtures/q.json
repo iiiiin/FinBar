@@ -1,0 +1,260 @@
+[
+    {
+        "model": "suggests.investmentquestion",
+        "pk": 1,
+        "fields": {
+            "question_text": "다음 중 경험한 금융상품은 무엇인가요?"
+        }
+    },
+    {
+        "model": "suggests.investmentquestion",
+        "pk": 2,
+        "fields": {
+            "question_text": "투자 가능한 예상 기간은 어느 정도인가요?"
+        }
+    },
+    {
+        "model": "suggests.investmentquestion",
+        "pk": 3,
+        "fields": {
+            "question_text": "다음 중 가장 적절하다고 생각하는 투자 방식을 선택해 주세요."
+        }
+    },
+    {
+        "model": "suggests.investmentquestion",
+        "pk": 4,
+        "fields": {
+            "question_text": "본인의 금융 지식 수준은 어느 정도인가요?"
+        }
+    },
+    {
+        "model": "suggests.investmentquestion",
+        "pk": 5,
+        "fields": {
+            "question_text": "투자 목적은 무엇입니까?"
+        }
+    },
+    {
+        "model": "suggests.investmentquestion",
+        "pk": 6,
+        "fields": {
+            "question_text": "자산이 단기간에 10% 이상 손실될 경우, 귀하의 대응은?"
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 1,
+        "fields": {
+            "question": 1,
+            "choice_text": "예금/적금",
+            "score": 1
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 2,
+        "fields": {
+            "question": 1,
+            "choice_text": "채권형 펀드",
+            "score": 2
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 3,
+        "fields": {
+            "question": 1,
+            "choice_text": "주식/주식형 펀드",
+            "score": 3
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 4,
+        "fields": {
+            "question": 1,
+            "choice_text": "파생상품/ETF/ELW 등",
+            "score": 4
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 5,
+        "fields": {
+            "question": 2,
+            "choice_text": "1년 미만",
+            "score": 1
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 6,
+        "fields": {
+            "question": 2,
+            "choice_text": "1~3년",
+            "score": 2
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 7,
+        "fields": {
+            "question": 2,
+            "choice_text": "3~5년",
+            "score": 3
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 8,
+        "fields": {
+            "question": 2,
+            "choice_text": "5년 이상",
+            "score": 4
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 9,
+        "fields": {
+            "question": 3,
+            "choice_text": "원금 손실 없이 안정적인 수익 선호",
+            "score": 1
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 10,
+        "fields": {
+            "question": 3,
+            "choice_text": "일정 부분 손실 감수, 중간 수익 기대",
+            "score": 2
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 11,
+        "fields": {
+            "question": 3,
+            "choice_text": "고위험 감수, 높은 수익 추구",
+            "score": 4
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 12,
+        "fields": {
+            "question": 3,
+            "choice_text": "상황에 따라 다르다",
+            "score": 3
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 13,
+        "fields": {
+            "question": 4,
+            "choice_text": "금융상품에 대해 거의 모른다",
+            "score": 1
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 14,
+        "fields": {
+            "question": 4,
+            "choice_text": "예적금 정도는 이해한다",
+            "score": 2
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 15,
+        "fields": {
+            "question": 4,
+            "choice_text": "펀드나 주식 이해 가능",
+            "score": 3
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 16,
+        "fields": {
+            "question": 4,
+            "choice_text": "금융상품 전반을 이해하고 분석 가능",
+            "score": 4
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 17,
+        "fields": {
+            "question": 5,
+            "choice_text": "자금의 보존",
+            "score": 1
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 18,
+        "fields": {
+            "question": 5,
+            "choice_text": "생활비 보조 또는 정기 수익",
+            "score": 2
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 19,
+        "fields": {
+            "question": 5,
+            "choice_text": "자산 증식",
+            "score": 3
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 20,
+        "fields": {
+            "question": 5,
+            "choice_text": "단기 차익 추구",
+            "score": 4
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 21,
+        "fields": {
+            "question": 6,
+            "choice_text": "전액 매도",
+            "score": 1
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 22,
+        "fields": {
+            "question": 6,
+            "choice_text": "일부 매도 후 안전 자산 이동",
+            "score": 2
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 23,
+        "fields": {
+            "question": 6,
+            "choice_text": "유지 또는 상황 판단",
+            "score": 3
+        }
+    },
+    {
+        "model": "suggests.investmentchoice",
+        "pk": 24,
+        "fields": {
+            "question": 6,
+            "choice_text": "추가 매수 고려",
+            "score": 4
+        }
+    }
+]
