@@ -125,7 +125,7 @@ class DepositProductOptionsReadSerializer(serializers.ModelSerializer):
 
 class DepositProductReadSerializer(serializers.ModelSerializer):
     options = DepositProductOptionsReadSerializer(
-        source="depositproductoptions_set", many=True, read_only=True
+        source="depositproductoptions", many=True, read_only=True
     )
 
     class Meta:
@@ -162,7 +162,7 @@ class SavingProductOptionsReadSerializer(serializers.ModelSerializer):
 
 class SavingProductReadSerializer(serializers.ModelSerializer):
     options = SavingProductOptionsReadSerializer(
-        source="savingproductoptions_set", many=True, read_only=True
+        source="savingproductoptions", many=True, read_only=True
     )
 
     class Meta:
