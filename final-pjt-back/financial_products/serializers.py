@@ -111,6 +111,41 @@ class SavingProductOptionsCreateSerializer(serializers.ModelSerializer):
 # ────────────── 출력용(Read-only) 시리얼라이저 ──────────────
 
 
+class DepositProductOptionReadSerializer(serializers.ModelSerializer):
+    kor_co_nm = serializers.ReadOnlyField(source="deposit_product.kor_co_nm")
+    fin_prdt_nm = serializers.ReadOnlyField(source="deposit_product.fin_prdt_nm")
+
+    class Meta:
+        model = DepositProductOptions
+        fields = (
+            "id",
+            "kor_co_nm",
+            "fin_prdt_nm",
+            "save_trm",
+            "intr_rate",
+            "intr_rate2",
+            # 필요 시 더 노출할 필드
+        )
+
+
+class SavingProductOptionReadSerializer(serializers.ModelSerializer):
+    kor_co_nm = serializers.ReadOnlyField(source="saving_product.kor_co_nm")
+    fin_prdt_nm = serializers.ReadOnlyField(source="saving_product.fin_prdt_nm")
+
+    class Meta:
+        model = SavingProductOptions
+        fields = (
+            "id",
+            "kor_co_nm",
+            "fin_prdt_nm",
+            "rsrv_type_nm",
+            "save_trm",
+            "intr_rate",
+            "intr_rate2",
+            # 필요 시 더 노출할 필드
+        )
+
+
 class DepositProductOptionsReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepositProductOptions
@@ -183,13 +218,16 @@ class SavingProductReadSerializer(serializers.ModelSerializer):
             "options",
         )
 
- # stocks/serializers.py
+
+# stocks/serializers.py
 
 
 class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
         fields = "__all__"
+
+
 # ---------------추천 응답 시리얼라이저 --------------------------
 
 # suggests/serializers.py

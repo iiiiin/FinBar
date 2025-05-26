@@ -8,12 +8,19 @@ ENV PYTHONUNBUFFERED 1
 # 3. 작업 디렉토리 설정
 WORKDIR /back
 
-# 필요한 시스템 패키지 설치
-RUN apt-get update && apt-get install -y \
+
+# 1. 시스템 패키지 설치 (mysql_config 포함)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     build-essential \
-    libpq-dev \
+    default-libmysqlclient-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
+# 2. Python 의존성 설치
+COPY requirements.txt .
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 # 4. 종속성 복사 및 설치
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt

@@ -1,10 +1,11 @@
-from django.urls import path
+# urls.py
 from rest_framework.routers import DefaultRouter
-from . import views
-
+from .views import DepositProductViewSet, SavingProductViewSet
+from .views import DepositOptionViewSet, SavingOptionViewSet
 
 router = DefaultRouter()
-router.register(r'deposits', views.DepositProductViewSet, basename='deposit')
-router.register(r'savings',  views.SavingProductViewSet,  basename='saving')
-
+router.register(r"deposits", DepositProductViewSet, basename="deposits")
+router.register(r"savings", SavingProductViewSet, basename="savings")
+router.register(r"deposit-options", DepositOptionViewSet, basename="deposit-options")
+router.register(r"saving-options", SavingOptionViewSet, basename="saving-options")
 urlpatterns = router.urls
