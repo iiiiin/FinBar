@@ -16,8 +16,10 @@ if (auth.token) {
     axios.defaults.headers.common['Authorization'] = `Token ${auth.token}`
   }
 
-
 const app = createApp(App)
+
+
+
 
 app.use(pinia)
 app.use(router)

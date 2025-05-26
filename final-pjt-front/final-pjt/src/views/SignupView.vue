@@ -14,15 +14,10 @@
                 :rules="[v => !!v || 'ID를 입력해주세요']"
                 required
               />
-              <!-- 나이 입력을 셀렉트 박스로 변경 -->
-              <v-select
-                v-model="age"
-                label="연령대"
-                :items="ageOptions"
-                :rules="[
-                  v => !!v || '나이를 입력해주세요',
-                  v => v > 0 || '유효한 나이를 입력해주세요'
-                ]"
+              <v-text-field
+                v-model="password1"
+                label="비밀번호"
+                type="password"
                 required
               />
               <v-text-field
@@ -42,20 +37,21 @@
                 ]"
                 required
               />
+              <!-- 나이 입력을 셀렉트 박스로 변경 -->
+              <v-select
+                v-model="age"
+                label="연령대"
+                :items="ageOptions"
+                :rules="[
+                  v => !!v || '나이를 입력해주세요',
+                  v => v > 0 || '유효한 나이를 입력해주세요'
+                ]"
+                required
+              />
               <v-text-field
                 v-model="nickname"
                 label="닉네임"
                 :rules="[v => !!v || '닉네임을 입력해주세요']"
-                required
-              />
-              <v-text-field
-                v-model="age"
-                label="나이"
-                type="number"
-                :rules="[
-                  v => !!v || '나이를 입력해주세요',
-                  v => (v && v > 0) || '유효한 나이를 입력해주세요'
-                ]"
                 required
               />
 
@@ -120,7 +116,7 @@ async function handleSignup() {
       nickname:  nickname.value,
       age:       age.value
     })
-    console.log('signup success:', res.data)
+    // console.log('signup success:', res.data)
     router.push('/login')
   } catch (err) {
     console.error(err)

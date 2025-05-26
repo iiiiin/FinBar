@@ -1,69 +1,65 @@
 <!-- src/views/BankMapView.vue -->
 <template>
   <v-container class="mx-auto" :style="{ maxWidth: '800px' }">
-    <!-- 1. 네비게이션 바 -->
+    <!-- 네비게이션 바 -->
     <v-row>
       <v-col cols="12">
         <NavigationBar />
       </v-col>
     </v-row>
 
-    <!-- 2. 페이지 제목 -->
+    <!-- 페이지 제목 -->
     <v-row class="my-4">
       <v-col cols="12">
         <Title :title="pageTitle" />
       </v-col>
     </v-row>
 
-    <!-- 3. 필터(select) + 확인 버튼 / 지도 영역 -->
+    <!-- 필터 + 지도 영역 -->
     <v-row>
-      <!-- 3-1. 왼쪽: 필터 영역 (시/도, 구/군, 은행 선택 + 확인 버튼) -->
       <v-col cols="12" md="3">
         <!-- 시/도 선택 -->
         <v-select
           v-model="selectedSido"
-          :items="sidoOptions"
-          item-text="name"
-          item-value="code"
+          :items="sidoList"
           label="시/도 선택"
           dense
-          @change="onSidoChange"
+          @update:model-value="onSidoChange"
         />
 
-        <!-- 구/군 선택 (시/도 선택 후 활성화) -->
+        <!-- 구/군 선택 -->
         <v-select
+          v-if="selectedSido"
           v-model="selectedGugun"
-          :items="gugunOptions"
-          item-text="name"
-          item-value="code"
+          :items="gugunList"
           label="구/군 선택"
           dense
-          :disabled="!selectedSido"
+          @update:model-value="onGugunChange"
         />
 
-        <!-- 은행 선택 (구/군 선택 후 활성화) -->
+        <!-- 은행 선택 -->
         <v-select
+          v-if="selectedGugun"
           v-model="selectedBank"
           :items="bankOptions"
           label="은행 선택"
           dense
-          :disabled="!selectedGugun"
         />
 
-        <!-- 선택된 조건으로 검색 -->
+        <!-- 검색 버튼 -->
         <v-btn
           block
           color="primary"
           class="mt-4"
           @click="onSearch"
+          :disabled="!selectedBank"
         >
           검색
         </v-btn>
       </v-col>
 
-      <!-- 3-2. 오른쪽: Kakao 지도 렌더링 영역 -->
+      <!-- 지도 렌더링 영역 -->
       <v-col cols="12" md="9">
-        <!-- 지도가 그려질 div -->
         <div id="map" class="map-container"></div>
       </v-col>
     </v-row>
@@ -72,141 +68,140 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
-import Title         from '@/components/Title.vue'
+import Title from '@/components/Title.vue'
 
 /** 페이지 타이틀 */
 const pageTitle = '주변 은행 검색'
 
-/** ————————————— 변수 선언 ————————————— */
-/** 1) 셀렉트박스 옵션 (API 프록시를 통해 백엔드에서 가져옴) */
-const sidoOptions  = ref([])   // [{ code: '11', name: '서울특별시' }, …]
-const gugunOptions = ref([])   // [{ code: '110', name: '강남구' }, …]
-const bankOptions  = [         // 은행명은 고정 리스트로도, API에서 가져와도 됩니다.
-  '국민은행',
-  '기업은행',
-  '신한은행',
-  '하나은행',
-  // … 필요시 추가
-]
+/** 지역 리스트 */
+const sidoList = ref([])
+const gugunList = ref([])
 
-/** 2) 사용자가 선택한 값 */
-const selectedSido  = ref(null)
+/** 선택 값 */
+const selectedSido = ref(null)
 const selectedGugun = ref(null)
-const selectedBank  = ref(null)
 
-/** 3) 서버(백엔드)에서 받아온 은행 위치 리스트 */
-const banks = ref([])  // [{ name: '국민은행 강남지점', lat: 37.498, lng: 127.027 }, …]
+/** 은행 리스트 */
+const bankOptions = ['국민은행', '기업은행', '신한은행', '하나은행']
+const selectedBank = ref(null)
 
-/** 4) Kakao Map 객체 참조용 */
+/** 검색 결과 장소 */
+const banks = ref([])
+
+/** Kakao 맵, Places, 마커 저장 */
 let kakaoMap = null
+let placesService = null
+let markers = []
 
-/** ————————————— helper 함수 ————————————— */
+/** Kakao SDK 로드 */
+function loadKakaoMapSdk() {
+  return new Promise((resolve, reject) => {
+    if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
+      return resolve()
+    }
+    const script = document.createElement('script')
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_JS_KEY}&libraries=services&autoload=false`
+    script.defer = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Kakao Maps SDK 로드 실패'))
+    document.head.appendChild(script)
+  })
+}
 
-/**
- * 1) 컴포넌트 마운트 시:
- *    - 시/도 목록을 가져오고
- *    - 기본 지도는 서울 중심으로 한 번 초기화
- */
-onMounted(async () => {
-  await fetchSidoList()
-  initMap(37.5665, 126.9780)  // 서울시청 좌표 예시
-})
-
-/**
- * 2) 시/도 목록 가져오기
- *    - 프론트엔드 → 백엔드(/api/regions/sido) → 카카오 REST API 호출(프록시)
- */
-async function fetchSidoList() {
+/** 행정구역 JSON 로드 */
+async function loadRegions() {
   try {
-    const { data } = await axios.get('/api/regions/sido')
-    sidoOptions.value = data
+    const res = await fetch('/korea-administrative-district.json')
+    const { data } = await res.json()
+    sidoList.value = data.map(item => Object.keys(item)[0])
   } catch (e) {
-    console.error('시/도 조회 실패', e)
+    console.error('행정구역 로드 실패', e)
   }
 }
 
-/**
- * 3) 시/도 선택 시 구/군 목록 가져오기
- */
-async function onSidoChange(code) {
-  selectedGugun.value = null
-  gugunOptions.value = []
-  try {
-    const { data } = await axios.get('/api/regions/gugun', {
-      params: { sido: code }
+/** 시/도 변경 */
+function onSidoChange(code) {
+  fetch('/korea-administrative-district.json')
+    .then(r => r.json())
+    .then(json => {
+      const entry = json.data.find(it => Object.keys(it)[0] === code)
+      const list = entry ? entry[code] : []
+      gugunList.value = list
+      selectedGugun.value = null
+      selectedBank.value = null
+      banks.value = []
     })
-    gugunOptions.value = data
-  } catch (e) {
-    console.error('구/군 조회 실패', e)
-  }
+    .catch(e => console.error('구/군 로드 실패', e))
 }
 
-/**
- * 4) “확인” 버튼 클릭 → 은행 검색
- *    - 파라미터(selectedGugun, selectedBank) 기준으로
- *      백엔드(/api/banks/search)에서 가까운 은행 리스트를 받아옴
- *    - 받은 좌표를 Kakao Map 위에 마커로 표시
- */
-async function onSearch() {
-  if (!selectedGugun.value || !selectedBank.value) return
-
-  try {
-    const { data } = await axios.get('/api/banks/search', {
-      params: {
-        gugun: selectedGugun.value,
-        bank:  selectedBank.value
-      }
-    })
-    banks.value = data
-    placeMarkers()
-  } catch (e) {
-    console.error('은행 검색 실패', e)
-  }
+/** 구/군 변경 */
+function onGugunChange(code) {
+  selectedBank.value = null
+  banks.value = []
 }
 
-/**
- * 5) 지도 초기화
- *    - SDK 스크립트는 index.html에서 도메인 제한 설정된 JS Key로 로드되어 있어야 함
- */
+/** 지도 초기화 및 Places 서비스 설정 */
 function initMap(lat, lng) {
   kakao.maps.load(() => {
     const container = document.getElementById('map')
-    const options = {
-      center: new kakao.maps.LatLng(lat, lng),
-      level: 4  // 지도의 확대 레벨
-    }
-    kakaoMap = new kakao.maps.Map(container, options)
+    kakaoMap = new kakao.maps.Map(container, { center: new kakao.maps.LatLng(lat, lng), level: 4 })
+    placesService = new kakao.maps.services.Places(kakaoMap)
+    // 기존 마커 제거
+    markers.forEach(m => m.setMap(null))
+    markers = []
   })
 }
 
-/**
- * 6) banks 배열을 순회하며 마커를 찍고, Bounds에 맞춰 줌
- */
+/** 컴포넌트 마운트 */
+onMounted(async () => {
+  await loadRegions()
+  await loadKakaoMapSdk()
+  // 초기 위치 가져오기
+  let lat = 37.5665, lng = 126.9780
+  try {
+    const res = await fetch('http://127.0.0.1:8000/map/', { method: 'POST' })
+    const data = await res.json()
+    lat = data.lat; lng = data.lng
+  } catch {}
+  initMap(lat, lng)
+})
+
+/** 검색 및 마커 생성 */
+function onSearch() {
+  if (!selectedBank.value || !placesService) return
+  const keyword = [selectedSido.value, selectedGugun.value, selectedBank.value].join(' ')
+  kakao.maps.load(() => {
+    placesService.keywordSearch(keyword, (result, status) => {
+      if (status === kakao.maps.services.Status.OK) {
+        banks.value = result.map(i => ({ name: i.place_name, lat: +i.y, lng: +i.x }))
+        placeMarkers()
+      } else {
+        console.error('검색 실패:', status)
+      }
+    })
+  })
+}
+
+/** 마커 표시 및 제거 */
 function placeMarkers() {
-  if (!kakaoMap) return
+  if (!kakaoMap || banks.value.length === 0) return
+  // 이전 마커 제거
+  markers.forEach(m => m.setMap(null))
+  markers = []
 
   const bounds = new kakao.maps.LatLngBounds()
-  // 기존 마커는 지우고 싶으면, 마커 배열을 관리해두고 setMap(null) 처리 필요
-
-  banks.value.forEach(bank => {
-    const pos = new kakao.maps.LatLng(bank.lat, bank.lng)
-    new kakao.maps.Marker({
-      map: kakaoMap,
-      position: pos,
-      title: bank.name
-    })
+  banks.value.forEach(b => {
+    const pos = new kakao.maps.LatLng(b.lat, b.lng)
+    const marker = new kakao.maps.Marker({ map: kakaoMap, position: pos, title: b.name })
+    markers.push(marker)
     bounds.extend(pos)
   })
-
-  // 모든 마커가 보이도록 지도의 중심·레벨을 자동 조정
   kakaoMap.setBounds(bounds)
 }
 </script>
 
 <style scoped>
-/* 지도 영역 크기 고정 */
 .map-container {
   width: 100%;
   height: 400px;
