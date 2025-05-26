@@ -1,4 +1,5 @@
 # services.py
+from .models import Stock
 import requests
 from django.conf import settings
 from django.db import connection, transaction
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 # API 엔드포인트 분리
 DEPOSIT_API_URL = "http://finlife.fss.or.kr/finlifeapi/depositProductsSearch.json"
-SAVING_API_URL  = "http://finlife.fss.or.kr/finlifeapi/savingProductsSearch.json"
+SAVING_API_URL = "http://finlife.fss.or.kr/finlifeapi/savingProductsSearch.json"
 
 
 def _fetch_page(api_url: str, top_fin_grp_no: str, page_no: int) -> dict:
@@ -34,13 +35,12 @@ def _collect_all(api_url: str, top_fin_grp_no: str):
     모든 페이지에서 baseList, optionList 수집하여 반환
     """
     first = _fetch_page(api_url, top_fin_grp_no, 1)
-    base_list   = first.get("baseList", [])
+    base_list = first.get("baseList", [])
     option_list = first.get("optionList", [])
-    max_page    = first.get("max_page_no", 1)
+    max_page = first.get("max_page_no", 1)
     top_fin_grp_no = top_fin_grp_no
 
     logger.info(f"[INFO] max_page_no: {max_page}")
-
 
     for page in range(2, max_page + 1):
         logger.info(f"[INFO] page_no: {page}")
@@ -50,6 +50,7 @@ def _collect_all(api_url: str, top_fin_grp_no: str):
         option_list.extend(page_data.get("optionList", []))
 
     return base_list, option_list, top_fin_grp_no
+
 
 def _upsert_generic(model, unique_fields: list, update_fields: list, records: list[dict]):
     """
@@ -67,7 +68,7 @@ def _upsert_generic(model, unique_fields: list, update_fields: list, records: li
     records = list(deduped.values())
 
     table = model._meta.db_table
-    cols  = list(records[0].keys())
+    cols = list(records[0].keys())
     values = [[rec[col] for col in cols] for rec in records]
 
     insert_sql = f"""
@@ -84,8 +85,6 @@ def _upsert_generic(model, unique_fields: list, update_fields: list, records: li
                 execute_values(cur, insert_sql, values)
     except Exception as e:
         logger.error(f"[ERROR] DB 오류 발생: {e}")
-
-
 
 
 # ─── Deposit 전용 Upsert ───
@@ -114,8 +113,9 @@ def upsert_deposit_products(model, data_list: list[dict], fin_no):
 
     _upsert_generic(
         model=model,
-        unique_fields=["fin_prdt_cd", "fin_co_no"],  
-        update_fields=[f for f in base_recs[0] if f not in ["fin_prdt_cd", "fin_co_no"]],
+        unique_fields=["fin_prdt_cd", "fin_co_no"],
+        update_fields=[f for f in base_recs[0]
+                       if f not in ["fin_prdt_cd", "fin_co_no"]],
         records=base_recs
     )
 
@@ -145,17 +145,18 @@ def upsert_deposit_options(data_list: list[dict]):
 
     _upsert_generic(
         model=DepositProductOptions,
-        unique_fields=["fin_co_no", "deposit_product_id", "intr_rate_type_nm", "save_trm"],
+        unique_fields=["fin_co_no", "deposit_product_id",
+                       "intr_rate_type_nm", "save_trm"],
         update_fields=["intr_rate", "intr_rate2"],
         records=opt_recs
     )
 
 # ─── Saving 전용 Upsert ───
 
-def upsert_saving_products(model, data_list: list[dict],fin_no):
-    # DepositProduct와 필드 구조 동일 → 같은 함수 재사용
-    upsert_deposit_products(model, data_list,fin_no)
 
+def upsert_saving_products(model, data_list: list[dict], fin_no):
+    # DepositProduct와 필드 구조 동일 → 같은 함수 재사용
+    upsert_deposit_products(model, data_list, fin_no)
 
 
 def upsert_saving_options(data_list: list[dict]):
@@ -184,12 +185,14 @@ def upsert_saving_options(data_list: list[dict]):
 
     _upsert_generic(
         model=SavingProductOptions,
-        unique_fields=["fin_co_no", "saving_product_id", "intr_rate_type_nm", "save_trm", "rsrv_type_nm"],
+        unique_fields=["fin_co_no", "saving_product_id",
+                       "intr_rate_type_nm", "save_trm", "rsrv_type_nm"],
         update_fields=["intr_rate", "intr_rate2"],
         records=opt_recs
     )
 
 # ─── 전체 수집 & Upsert 트리거 ───
+
 
 def fetch_and_upsert_deposit(top_fin_grp_no: str):
     base, opts, fin_no = _collect_all(DEPOSIT_API_URL, top_fin_grp_no)
