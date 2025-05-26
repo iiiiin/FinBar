@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "search_youtubes",
     "maps",
     "suggests",
+    "django_filters",
     "django_celery_results",
     "django_celery_beat",
     "drf_yasg",
@@ -109,6 +110,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
 
 

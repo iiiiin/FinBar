@@ -1,5 +1,6 @@
 from django.db import models
 from suggests.models import ProductCategory
+
 # Create your models here.
 
 
@@ -28,7 +29,7 @@ class Stock(models.Model):
     risk_level = models.CharField(
         max_length=10,
         choices=[("low", "낮음"), ("medium", "중간"), ("high", "높음")],
-        default="high"
+        default="high",
     )
     category = models.ForeignKey(
         ProductCategory, on_delete=models.SET_NULL, null=True, default=5
@@ -52,7 +53,7 @@ class DepositProduct(models.Model):
     risk_level = models.CharField(
         max_length=10,
         choices=[("low", "낮음"), ("medium", "중간"), ("high", "높음")],
-        default="low"
+        default="low",
     )
     category = models.ForeignKey(
         ProductCategory, on_delete=models.SET_NULL, null=True, default=1
@@ -68,9 +69,7 @@ class DepositProduct(models.Model):
 
 class DepositProductOptions(models.Model):
     deposit_product = models.ForeignKey(
-        DepositProduct,
-        related_name="depositproductoptions",
-        on_delete=models.CASCADE
+        DepositProduct, related_name="depositproductoptions", on_delete=models.CASCADE
     )
     fin_co_no = models.CharField(max_length=200)
     intr_rate_type_nm = models.CharField(max_length=200)
@@ -81,7 +80,13 @@ class DepositProductOptions(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["fin_co_no", "deposit_product", "intr_rate_type_nm", "save_trm"], name="unique_option_deposit"
+                fields=[
+                    "fin_co_no",
+                    "deposit_product",
+                    "intr_rate_type_nm",
+                    "save_trm",
+                ],
+                name="unique_option_deposit",
             )
         ]
 
@@ -103,7 +108,7 @@ class SavingProduct(models.Model):
     risk_level = models.CharField(
         max_length=10,
         choices=[("low", "낮음"), ("medium", "중간"), ("high", "높음")],
-        default="low"
+        default="low",
     )
     category = models.ForeignKey(
         ProductCategory, on_delete=models.SET_NULL, null=True, default=2
@@ -119,9 +124,7 @@ class SavingProduct(models.Model):
 
 class SavingProductOptions(models.Model):
     saving_product = models.ForeignKey(
-        SavingProduct,
-        related_name="savingproductoptions",
-        on_delete=models.CASCADE
+        SavingProduct, related_name="savingproductoptions", on_delete=models.CASCADE
     )
     fin_co_no = models.CharField(max_length=200)
     intr_rate_type_nm = models.CharField(max_length=200)
@@ -133,6 +136,43 @@ class SavingProductOptions(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["fin_co_no", "saving_product", "intr_rate_type_nm", "save_trm", "rsrv_type_nm"], name="unique_option_saving"
+                fields=[
+                    "fin_co_no",
+                    "saving_product",
+                    "intr_rate_type_nm",
+                    "save_trm",
+                    "rsrv_type_nm",
+                ],
+                name="unique_option_saving",
             )
         ]
+
+
+# models.py
+from django.db import models
+
+
+class DepositCompany(models.Model):
+    kor_co_nm = models.CharField("예금 금융회사명", max_length=200, unique=True)
+    top_fin_grp_no = models.CharField("금융회사 분류 코드", max_length=100)
+
+    class Meta:
+        db_table = "financial_products_depositcompany"
+        verbose_name = "예금 금융회사"
+        verbose_name_plural = "예금 금융회사 목록"
+
+    def __str__(self):
+        return self.kor_co_nm
+
+
+class SavingCompany(models.Model):
+    kor_co_nm = models.CharField("적금 금융회사명", max_length=200, unique=True)
+    top_fin_grp_no = models.CharField("금융회사 분류 코드", max_length=100)
+
+    class Meta:
+        db_table = "financial_products_savingcompany"
+        verbose_name = "적금 금융회사"
+        verbose_name_plural = "적금 금융회사 목록"
+
+    def __str__(self):
+        return self.kor_co_nm
