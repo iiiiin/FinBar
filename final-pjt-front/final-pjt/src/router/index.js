@@ -4,7 +4,6 @@ import ArticleListView from '@/views/ArticleListView.vue'
 import ArticleUpdateView from '@/views/ArticleUpdateView.vue'
 import BankMapView from '@/views/BankMapView.vue'
 import DepositDetailView from '@/views/DepositDetailView.vue'
-import DepositListView from '@/views/DepositListView.vue'
 import ErrorView from '@/views/ErrorView.vue'
 import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
@@ -14,6 +13,8 @@ import SpotPriceView from '@/views/SpotPriceView.vue'
 import StockVideoView from '@/views/StockVideoView.vue'
 import VideoDetailView from '@/views/videoDetailView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import ProductListView from '@/views/ProductListView.vue'
+import SavingDetailView from '@/views/SavingDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -99,15 +100,21 @@ const router = createRouter({
     },
     // 예적금 상품 목록 페이지
     {
-      path: '/depositlist',
-      name: 'depositList',
-      component: DepositListView,
+      path: '/product',
+      name: 'productList',
+      component: ProductListView,
     },
-    // 예적금 상품 상세 페이지
+    // 예금 상품 상세 페이지
     {
-      path: '/depositdetail',
+      path: '/deposits/:id',
       name: 'depositDetail',
       component: DepositDetailView,
+    },
+    // 예금 상품 상세 페이지
+    {
+      path: '/savings/:id',
+      name: 'savingDetail',
+      component: SavingDetailView,
     },
   ],
 })

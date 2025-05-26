@@ -79,8 +79,6 @@ async function fetchArticles() {
   // 1) 기존 데이터 지우기
   videos.splice(0, videos.length)
   isLoading.value = true
-
-  console.log(typeof videos)
   try {
     const token = localStorage.getItem('token')
     const { data } = await axios.get('http://localhost:8000/youtube/', {

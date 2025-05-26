@@ -54,7 +54,7 @@
     <!-- 결과 테이블 -->
     <v-data-table
       :headers="headers"
-      :items="paginatedItems"
+      :items="loading ? [] : paginatedItems"
       :loading="loading"
       class="elevation-1"
       :items-per-page="perPage"
@@ -63,10 +63,21 @@
       <!-- 커스텀 헤더 슬롯: props.headers로 헤더 행 렌더링 -->
       <template #header="{ props }">
         <tr>
-          <th v-for="h in props.headers" :key="h.value" class="text-left">
+          <th
+            v-for="h in props.headers"
+            :key="h.value"
+            class="text-left"
+          >
             {{ h.text }}
           </th>
         </tr>
+      </template>
+
+      <!-- 상품명 컬럼: 클릭 시 상세 페이지로 이동 -->
+      <template #item.finPrdtNm="{ item }">
+        <router-link :to="detailRoute(item)">
+           {{ item.finPrdtNm }}
+        </router-link>
       </template>
 
       <!-- 금리1 포맷을 위한 슬롯 -->
@@ -88,10 +99,10 @@
 import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
 import Title from '@/components/Title.vue'
-import Pagination from '@/components/pagination.vue'
+import Pagination from '@/components/Pagination.vue'
 
 export default {
-  name: 'DepositListView',
+  name: 'ProductListView',
   components: { NavigationBar, Title, Pagination },
   data() {
     return {
@@ -111,25 +122,28 @@ export default {
           acc.push({
             // 고유 키
             key: `${product.fin_prdt_cd}_${opt.intr_rate_type_nm}_${opt.save_trm}`,
+
             // DepositProduct
-            finCoNo: product.fin_co_no,
-            korCoNm: product.kor_co_nm,
-            finPrdtCd: product.fin_prdt_cd,
-            finPrdtNm: product.fin_prdt_nm,
-            joinWay: product.join_way,
-            mtrtInt: product.mtrt_int,
-            spclCnd: product.spcl_cnd,
-            joinDeny: product.join_deny,
-            joinMember: product.join_member,
-            etcNote: product.etc_note,
-            maxLimit: product.max_limit,
-            dclsStrtDay: product.dcls_strt_day,
+            finCoNo:         product.fin_co_no,
+            korCoNm:         product.kor_co_nm,
+            finPrdtCd:       product.fin_prdt_cd,
+            finPrdtNm:       product.fin_prdt_nm,
+            joinWay:         product.join_way,
+            mtrtInt:         product.mtrt_int,
+            spclCnd:         product.spcl_cnd,
+            joinDeny:        product.join_deny,
+            joinMember:      product.join_member,
+            etcNote:         product.etc_note,
+            maxLimit:        product.max_limit,
+            dclsStrtDay:     product.dcls_strt_day,
+
             // DepositProductOptions
             depositProductId: opt.deposit_product_id,
-            intrRateTypeNm: opt.intr_rate_type_nm,
-            saveTrm: opt.save_trm,
-            intrRate: opt.intr_rate,
-            intrRate2: opt.intr_rate2,
+            savingProductId: opt.saving_product_id,
+            intrRateTypeNm:   opt.intr_rate_type_nm,
+            saveTrm:          opt.save_trm,
+            intrRate:         opt.intr_rate,
+            intrRate2:        opt.intr_rate2,
           })
         })
         return acc
@@ -137,10 +151,10 @@ export default {
     },
     // 필터 적용
     filteredItems() {
-      return this.optionsFlatten.filter(item => (
+      return this.optionsFlatten.filter(item =>
         (!this.filters.bank || item.korCoNm === this.filters.bank) &&
         (!this.filters.term || item.saveTrm === this.filters.term)
-      ))
+      )
     },
     // 전체 페이지 수
     totalPages() {
@@ -154,19 +168,9 @@ export default {
     // 테이블 헤더 정의
     headers() {
       return [
-        { text: '금융회사 코드', value: 'finCoNo' },
+        { text: '공시 시작일', value: 'dclsStrtDay' },
         { text: '은행명',       value: 'korCoNm' },
-        { text: '상품 코드',     value: 'finPrdtCd' },
         { text: '상품명',       value: 'finPrdtNm' },
-        { text: '가입 방식',     value: 'joinWay' },
-        { text: '만기 이자',     value: 'mtrtInt' },
-        { text: '특약 조건',     value: 'spclCnd' },
-        { text: '가입 제한',     value: 'joinDeny' },
-        { text: '가입 대상',     value: 'joinMember' },
-        { text: '기타 내용',     value: 'etcNote' },
-        { text: '최대 한도',     value: 'maxLimit' },
-        { text: '공시 시작일',   value: 'dclsStrtDay' },
-        { text: '옵션 ID',       value: 'depositProductId' },
         { text: '금리 유형',     value: 'intrRateTypeNm' },
         { text: '저축 기간',     value: 'saveTrm' },
         { text: '금리1',         value: 'intrRate' },
@@ -188,6 +192,17 @@ export default {
         this.fetchProducts()
       }
     },
+   /**
+    * 예금/적금 모드에 따라
+    * DepositDetail 또는 SavingDetail 로 이동할 라우트 객체 반환
+    */
+   detailRoute(item) {
+    if (this.type === 'deposit') {
+      return { name: 'depositDetail', params: { id: item.depositProductId } }
+    } else {
+      return { name: 'savingDetail',  params: { id: item.savingProductId  } }
+    }
+  },
     async fetchProducts() {
       this.loading = true
       try {
@@ -195,7 +210,9 @@ export default {
           ? 'http://127.0.0.1:8000/products/deposits/'
           : 'http://127.0.0.1:8000/products/savings/'
         const res = await axios.get(url)
-        const data = Array.isArray(res.data) ? res.data : res.data.results || []
+        const data = Array.isArray(res.data)
+          ? res.data
+          : res.data.results || []
         this.rawProducts = data
         this.filters.bank = null
         this.filters.term = null
