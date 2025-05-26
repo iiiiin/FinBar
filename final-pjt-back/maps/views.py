@@ -1,15 +1,19 @@
 # views.py
 import requests
 from django.conf import settings
-from rest_framework.decorators import api_view
+from rest_framework import status
 from rest_framework.response import Response
-
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 
 # 기본 위치: 서울시청
 DEFAULT_LOCATION = {"lat": 37.5665, "lng": 126.9780}
 
 
 @api_view(["POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([AllowAny])
 def resolve_map_location(request):
     """
     프론트에서 사용자 위치 정보를 전달 (lat, lng)
@@ -37,6 +41,8 @@ def resolve_map_location(request):
 
 
 @api_view(["POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def search_nearby_places(request):
     keyword = request.data.get("keyword")
     lat = request.data.get("lat")
