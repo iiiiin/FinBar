@@ -1,5 +1,5 @@
 from django.db import models
-
+from suggests.models import ProductCategory
 # Create your models here.
 
 
@@ -25,6 +25,15 @@ class Stock(models.Model):
     #  상장주식수 ( 중요도  : 상 )
     listed_shares = models.BigIntegerField()
 
+    risk_level = models.CharField(
+        max_length=10,
+        choices=[("low", "낮음"), ("medium", "중간"), ("high", "높음")],
+        default="high"
+    )
+    category = models.ForeignKey(
+        ProductCategory, on_delete=models.SET_NULL, null=True, default=5
+    )
+
 
 class DepositProduct(models.Model):
     top_fin_grp_no = models.CharField(max_length=100)
@@ -40,6 +49,15 @@ class DepositProduct(models.Model):
     etc_note = models.TextField(max_length=20000)
     max_limit = models.BigIntegerField(null=True)
     dcls_strt_day = models.DateField()
+    risk_level = models.CharField(
+        max_length=10,
+        choices=[("low", "낮음"), ("medium", "중간"), ("high", "높음")],
+        default="low"
+    )
+    category = models.ForeignKey(
+        ProductCategory, on_delete=models.SET_NULL, null=True, default=1
+    )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -48,10 +66,11 @@ class DepositProduct(models.Model):
         ]
 
 
-
 class DepositProductOptions(models.Model):
     deposit_product = models.ForeignKey(
-        DepositProduct, on_delete=models.CASCADE
+        DepositProduct,
+        related_name="depositproductoptions",
+        on_delete=models.CASCADE
     )
     fin_co_no = models.CharField(max_length=200)
     intr_rate_type_nm = models.CharField(max_length=200)
@@ -62,7 +81,7 @@ class DepositProductOptions(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["fin_co_no","deposit_product", "intr_rate_type_nm", "save_trm"], name="unique_option_deposit"
+                fields=["fin_co_no", "deposit_product", "intr_rate_type_nm", "save_trm"], name="unique_option_deposit"
             )
         ]
 
@@ -81,17 +100,28 @@ class SavingProduct(models.Model):
     etc_note = models.TextField(max_length=20000)
     max_limit = models.BigIntegerField(null=True)
     dcls_strt_day = models.DateField()
+    risk_level = models.CharField(
+        max_length=10,
+        choices=[("low", "낮음"), ("medium", "중간"), ("high", "높음")],
+        default="low"
+    )
+    category = models.ForeignKey(
+        ProductCategory, on_delete=models.SET_NULL, null=True, default=2
+    )
 
     class Meta:
-            constraints = [
-                models.UniqueConstraint(
-                    fields=["fin_prdt_cd", "fin_co_no"], name="unique_saving_product"
-                )
-            ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["fin_prdt_cd", "fin_co_no"], name="unique_saving_product"
+            )
+        ]
+
 
 class SavingProductOptions(models.Model):
     saving_product = models.ForeignKey(
-        SavingProduct, on_delete=models.CASCADE
+        SavingProduct,
+        related_name="savingproductoptions",
+        on_delete=models.CASCADE
     )
     fin_co_no = models.CharField(max_length=200)
     intr_rate_type_nm = models.CharField(max_length=200)
@@ -103,6 +133,6 @@ class SavingProductOptions(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["fin_co_no","saving_product", "intr_rate_type_nm", "save_trm", "rsrv_type_nm"], name="unique_option_saving"
+                fields=["fin_co_no", "saving_product", "intr_rate_type_nm", "save_trm", "rsrv_type_nm"], name="unique_option_saving"
             )
         ]

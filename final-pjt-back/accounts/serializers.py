@@ -1,3 +1,4 @@
+from .models import InvestmentGoal
 from allauth.account.utils import setup_user_email
 from allauth.account.models import EmailAddress
 from dj_rest_auth.registration.serializers import RegisterSerializer
@@ -11,7 +12,7 @@ from django.conf import settings
 
 from django.contrib.auth import get_user_model
 
-# 이메일 필드 관련 
+# 이메일 필드 관련
 from allauth.account.models import EmailAddress
 from allauth.account.utils import setup_user_email
 
@@ -78,3 +79,22 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
         instance.nickname = validated_data.get("nickname", instance.nickname)
         instance.save()
         return instance
+
+
+class InvestmentGoalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InvestmentGoal
+        fields = (
+            "current_asset",
+            "target_asset",
+            "target_years",
+            "expected_annual_return",
+        )
+        read_only_fields = ("expected_annual_return",)
+
+    def validate(self, data):
+        if data.get("target_asset") and data.get("current_asset") and data["target_asset"] <= data["current_asset"]:
+            raise serializers.ValidationError("목표 자산은 현재 자산보다 커야 합니다.")
+        if data.get("target_years") is not None and data["target_years"] <= 0:
+            raise serializers.ValidationError("목표 기간은 1년 이상이어야 합니다.")
+        return data
