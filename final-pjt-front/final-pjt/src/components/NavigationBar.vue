@@ -3,7 +3,7 @@
     <!-- 좌측 네비게이션 -->
     <v-toolbar-items>
       <v-btn text :to="{name: 'home'}">Home</v-btn>
-      <v-btn text :to="{name: 'depositList'}">예적금상품</v-btn>
+      <v-btn text :to="{name: 'productList'}">예적금상품</v-btn>
       <v-btn text :to="{name: 'spotPrice'}">현물상품</v-btn>
       <v-btn text :to="{name: 'videoStock'}">주식정보검색</v-btn>
       <v-btn text :to="{name: 'bankMap'}">은행지도</v-btn>
