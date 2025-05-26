@@ -87,7 +87,6 @@ def submit_investment_answers(request):
             "evaluated_at": profile.evaluated_at,
         })
 
-# suggests/views.py
 
 
 @api_view(["POST"])

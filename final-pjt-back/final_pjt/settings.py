@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "financial_products",
     "search_youtubes",
     "maps",
+    "my_products",
     "suggests",
     "django_filters",
     "django_celery_results",
