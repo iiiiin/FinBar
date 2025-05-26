@@ -1,6 +1,5 @@
 from django.db import models
 from suggests.models import ProductCategory
-from rest_framework import serializers
 # Create your models here.
 
 
@@ -36,27 +35,9 @@ class Stock(models.Model):
     )
 
 
-class FinancialCompanyDeposit(models.Model):
-    kor_co_nm = models.CharField(max_length=200, unique=True)
-
-    def __str__(self):
-        return self.kor_co_nm
-
-
-class FinancialCompanySaving(models.Model):
-    kor_co_nm = models.CharField(max_length=200, unique=True)
-
-    def __str__(self):
-        return self.kor_co_nm
-
-
 class DepositProduct(models.Model):
     top_fin_grp_no = models.CharField(max_length=100)
-    financial_company = models.ForeignKey(
-        FinancialCompanyDeposit,
-        on_delete=models.CASCADE,
-        related_name='deposit_products'
-    )
+    fin_co_no = models.CharField(max_length=200)
     kor_co_nm = models.CharField(max_length=200)
     fin_prdt_cd = models.CharField(max_length=200)
     fin_prdt_nm = models.CharField(max_length=200)
@@ -108,11 +89,7 @@ class DepositProductOptions(models.Model):
 class SavingProduct(models.Model):
     top_fin_grp_no = models.CharField(max_length=100)
     fin_co_no = models.CharField(max_length=200)
-    financial_company = models.ForeignKey(
-        FinancialCompanySaving,
-        on_delete=models.CASCADE,
-        related_name='deposit_products'
-    )
+    kor_co_nm = models.CharField(max_length=200)
     fin_prdt_cd = models.CharField(max_length=200)
     fin_prdt_nm = models.CharField(max_length=200)
     join_way = models.CharField(max_length=200, null=True)
@@ -159,19 +136,3 @@ class SavingProductOptions(models.Model):
                 fields=["fin_co_no", "saving_product", "intr_rate_type_nm", "save_trm", "rsrv_type_nm"], name="unique_option_saving"
             )
         ]
-
-
-class DepositProductReadSerializer(serializers.ModelSerializer):
-    financial_company = serializers.StringRelatedField()
-
-    class Meta:
-        model = DepositProduct
-        fields = '__all__'
-
-
-class SavingProductReadSerializer(serializers.ModelSerializer):
-    financial_company = serializers.StringRelatedField()
-
-    class Meta:
-        model = SavingProduct
-        fields = '__all__'
