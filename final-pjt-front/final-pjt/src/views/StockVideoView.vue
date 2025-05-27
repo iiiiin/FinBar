@@ -50,6 +50,7 @@
     <v-row v-else class="text-center">
       <v-col cols="12"><p>검색 결과가 없습니다.</p></v-col>
     </v-row>
+    <PlaceFooter src="/images/plate.png" alt="메뉴접시" />
   </v-container>
 </template>
 
@@ -60,6 +61,7 @@ import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
 import SearchBar     from '@/components/SearchBar.vue'
 import Title         from '@/components/Title.vue'
+import PlaceFooter from '@/components/PlaceFooter.vue'
 import { useVideoStore } from '@/stores/videoStore'
 
 const pageTitle = '관심 종목 정보 검색'
@@ -116,4 +118,23 @@ onMounted(() => {
   margin-bottom: 4px; word-break: break-word;
 }
 .video-date { font-size: 14px; color: #666; }
+/* Vuetify v-btn 기본 스타일 오버라이드 */
+::v-deep .v-btn {
+  background-color: #ffffff !important;       /* 흰 배경 */
+  color: #000000 !important;                  /* 검은 글씨 */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important; /* 연한 회색 그림자 */
+  border: none !important;                    /* 테두리 제거 */
+}
+
+/* Hover 시 그림자만 살짝 강조 */
+::v-deep .v-btn:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* 선택된(primary) 혹은 text prop 은 그대로 두고, 색만 바뀌게 */
+::v-deep .v-btn--text {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: #000000 !important;
+}
 </style>

@@ -28,8 +28,8 @@ const props = defineProps({
 })
 const emits = defineEmits(['select'])
 
-function onSelect(id) {
-  emits('select', id)
+function onSelect(post) {
+  emits('select', post)
 }
 
 function formatDate(date) {

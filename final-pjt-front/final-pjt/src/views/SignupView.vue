@@ -1,6 +1,7 @@
 <!-- src/views/Signup.vue -->
 <template>
   <NavigationBar />
+  <v-main>
   <v-container fluid class="fill-height">
     <v-row align="center" justify="center">
       <v-col cols="12" sm="8" md="4">
@@ -80,6 +81,7 @@
       </v-col>
     </v-row>
   </v-container>
+</v-main>
 </template>
 
 <script setup>
@@ -128,5 +130,40 @@ async function handleSignup() {
 </script>
 
 <style scoped>
-.signup-page { }
+/* Vuetify v-btn 기본 스타일 오버라이드 */
+::v-deep .v-btn {
+  background-color: #ffffff !important;       /* 흰 배경 */
+  color: #000000 !important;                  /* 검은 글씨 */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important; /* 연한 회색 그림자 */
+  border: none !important;                    /* 테두리 제거 */
+}
+
+/* Hover 시 그림자만 살짝 강조 */
+::v-deep .v-btn:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* 선택된(primary) 혹은 text prop 은 그대로 두고, 색만 바뀌게 */
+::v-deep .v-btn--text {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: #000000 !important;
+}
+/* v-alert 전체 스타일 오버라이드 */
+::v-deep .v-alert {
+  background-color: #ffffff !important;       /* 흰 배경 */
+  color: #000000 !important;                  /* 검은 글씨 */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important; /* 연한 회색 그림자 */
+  border: none !important;                    /* 테두리 제거 */
+}
+
+/* colored-border, border-start 등으로 들어온 좌측 컬러바도 제거 */
+::v-deep .v-alert--border-start {
+  border-left: none !important;
+}
+
+/* 만약 다른 border 속성이 붙는 경우에도 완전 제거 */
+::v-deep .v-alert {
+  border-width: 0 !important;
+}
 </style>
