@@ -201,7 +201,7 @@ import { useSurveyStore } from '@/stores/surveyStore';
 import { useRouter } from 'vue-router';
 import SurveyQuestionItem from '@/components/SurveyQuestionItem.vue';
 import NavigationBar from '@/components/NavigationBar.vue';
-import { surveyAPI, investmentAPI } from '@/services/api';
+import apiClient from '@/services/api';
 
 const router = useRouter();
 const store = useSurveyStore();
@@ -279,14 +279,14 @@ async function onSubmit() {
         };
 
         try {
-            await investmentAPI.getRiskProfile();
-            await investmentAPI.updateRiskProfile({
+            await apiClient.getRiskProfile();
+            await apiClient.updateRiskProfile({
                 total_score: resultData.value.total_score,
                 risk_type: resultData.value.risk_type
             });
         } catch (e) {
             if (e.response?.status === 404) {
-                await investmentAPI.createRiskProfile({
+                await apiClient.createRiskProfile({
                     total_score: resultData.value.total_score,
                     risk_type: resultData.value.risk_type
                 });

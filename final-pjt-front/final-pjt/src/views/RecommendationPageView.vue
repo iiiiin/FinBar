@@ -126,7 +126,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useRecommendationStore } from '@/stores/recommendationStore';
 import NavigationBar from '@/components/NavigationBar.vue';
 import RecommendationItem from '@/components/RecommendationItem.vue';
-import { recommendationAPI } from '@/services/api';
+import apiClient from '@/services/api';
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -181,7 +181,7 @@ async function refreshRecommendations() {
     loading.value = true;
     error.value = '';
     try {
-        const response = await recommendationAPI.getByGoal();
+        const response = await apiClient.getByGoal();
         
         if (!response?.data) {
             throw new Error('추천 데이터를 불러올 수 없습니다.');

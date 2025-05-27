@@ -1,6 +1,6 @@
 // src/stores/recommendationStore.js
 import { defineStore } from 'pinia';
-import { recommendationAPI } from '@/services/api';
+import apiClient from '@/services/api';
 
 // 상수 정의
 const CACHE_DURATION = 5 * 60 * 1000; // 5분
@@ -104,7 +104,7 @@ export const useRecommendationStore = defineStore('recommendation', {
                     category: params.category || this.filters.category
                 };
 
-                const response = await recommendationAPI.getByGoal(queryParams);
+                const response = await apiClient.getByGoal(queryParams);
 
                 if (!response?.data) {
                     throw new Error('응답 데이터가 올바르지 않습니다.');
@@ -140,7 +140,7 @@ export const useRecommendationStore = defineStore('recommendation', {
             }
 
             try {
-                const response = await recommendationAPI.saveStocks(stocks);
+                const response = await apiClient.saveStocks(stocks);
 
                 if (!response?.data) {
                     throw new Error('저장 응답이 올바르지 않습니다.');
@@ -164,7 +164,7 @@ export const useRecommendationStore = defineStore('recommendation', {
             }
 
             try {
-                const response = await recommendationAPI.getSavedRecommendations();
+                const response = await apiClient.getSavedRecommendations();
 
                 if (!response?.data) {
                     throw new Error('저장된 추천 데이터 응답이 올바르지 않습니다.');
@@ -207,7 +207,7 @@ export const useRecommendationStore = defineStore('recommendation', {
             }
 
             try {
-                await recommendationAPI.deleteStockRecommendation(id);
+                await apiClient.deleteStockRecommendation(id);
                 this.savedRecommendations = this.savedRecommendations.filter(item => item.id !== id);
                 this.invalidateCache();
             } catch (err) {
@@ -218,7 +218,7 @@ export const useRecommendationStore = defineStore('recommendation', {
 
         async deleteAllSavedRecommendations() {
             try {
-                await recommendationAPI.deleteAllSavedRecommendations();
+                await apiClient.deleteAllSavedRecommendations();
                 this.savedRecommendations = [];
                 this.invalidateCache();
             } catch (err) {

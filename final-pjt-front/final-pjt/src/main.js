@@ -2,10 +2,9 @@ import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import axios from 'axios'
 
-import vuetify from './plugins/vuetify'
+// import vuetify from './plugins/vuetify'
 import App from './App.vue'
 import router from './router'
-import { Vue3Lottie } from 'vue3-lottie'
 
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
@@ -45,10 +44,5 @@ if (authStore.token) {
   axios.defaults.headers.common['Authorization'] = `Token ${authStore.token}`
 }
 
-import { useAuthStore } from '@/stores/auth'
-const authStore = useAuthStore()
-if (authStore.token) {
-  axios.defaults.headers.common['Authorization'] = `Token ${authStore.token}`
-}
 app.mount('#app')
 

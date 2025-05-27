@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { surveyAPI } from '@/services/api';
+import apiClient from '@/services/api';
 
 export const useSurveyStore = defineStore('survey', {
     state: () => ({
@@ -35,7 +35,7 @@ export const useSurveyStore = defineStore('survey', {
             this.loading = true;
             this.error = null;
             try {
-                const response = await surveyAPI.getQuestions();
+                const response = await apiClient.getQuestions();
                 console.log('받은 설문 데이터:', response.data);
                 if (!Array.isArray(response.data)) {
                     throw new Error('Invalid response format');
@@ -77,7 +77,7 @@ export const useSurveyStore = defineStore('survey', {
                 }));
 
                 console.log('제출할 답변 데이터:', { answers: formattedAnswers });
-                const response = await surveyAPI.submitAnswers({
+                const response = await apiClient.submitAnswers({
                     answers: formattedAnswers
                 });
                 console.log('제출 응답:', response.data);

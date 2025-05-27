@@ -224,7 +224,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import NavigationBar from '@/components/NavigationBar.vue'
 import { useAuthStore } from '@/stores/auth'
-import { investmentAPI } from '@/services/api'
+import apiClient from '@/services/api'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -297,7 +297,7 @@ watch([
 // Methods
 async function fetchExistingGoal() {
   try {
-    const { data } = await investmentAPI.getGoal()
+    const { data } = await apiClient.getGoal()
     hasExistingGoal.value = true
     goalData.value = {
       current_asset: data.current_asset,
@@ -350,11 +350,11 @@ async function submitGoal() {
     try {
       if (hasExistingGoal.value) {
         // 수정
-        const response = await investmentAPI.updateGoal(formattedData)
+        const response = await apiClient.updateGoal(formattedData)
         console.log('수정 응답:', response)
       } else {
         // 생성
-        const response = await investmentAPI.createGoal(formattedData)
+        const response = await apiClient.createGoal(formattedData)
         console.log('생성 응답:', response)
       }
       
