@@ -21,6 +21,8 @@ from django.core.cache import cache
 from django.db.models import Prefetch
 from django.utils import timezone
 import logging
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 logger = logging.getLogger(__name__)
 
@@ -133,56 +135,30 @@ def create_investment_goal(request):
         )
 
 
-class InvestmentGoalAPIView(generics.RetrieveUpdateAPIView):
-    serializer_class = InvestmentGoalSerializer
-    permission_classes = [permissions.IsAuthenticated]
+class InvestmentGoalAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    def put(self, request, *args, **kwargs):
-        return super().put(request, *args, **kwargs)
-
-    def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        """PUT/PATCH 요청 시 에러 처리 개선"""
+    def get(self, request):
         try:
-            partial = kwargs.pop("partial", False)
-            instance = self.get_object()
-            serializer = self.get_serializer(
-                instance, data=request.data, partial=partial
-            )
-
-            if serializer.is_valid():
-                self.perform_update(serializer)
-                # 수익률 재계산
-                instance.expected_annual_return = instance.calculate_required_return()
-                instance.save()
-
-                return Response(serializer.data)
-
-            return Response(
-                {"error": "입력값이 올바르지 않습니다.", "details": serializer.errors},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        except Exception as e:
-            return Response(
-                {"error": "투자 목표 수정 중 오류가 발생했습니다.", "details": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-    def get_object(self):
-        try:
-            return get_object_or_404(InvestmentGoal, user=self.request.user)
+            goal = InvestmentGoal.objects.get(user=request.user)
+            serializer = InvestmentGoalSerializer(goal)
+            return Response(serializer.data)
         except InvestmentGoal.DoesNotExist:
-            raise DRFValidationError(
-                {
-                    "error": "투자 목표가 설정되지 않았습니다. 먼저 투자 목표를 생성해주세요."
-                }
-            )
+            return Response(status=404)
+
+    def put(self, request):
+        try:
+            goal = InvestmentGoal.objects.get(user=request.user)
+            serializer = InvestmentGoalSerializer(goal, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=400)
+        except InvestmentGoal.DoesNotExist:
+            return Response(status=404)
+
+    def patch(self, request):
+        return self.put(request)
 
 
 @api_view(["POST"])

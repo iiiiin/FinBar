@@ -131,6 +131,12 @@ api.interceptors.response.use(
 
         // 401 에러 처리 - 인증 실패
         if (error.response?.status === 401) {
+            // 프로필 관련 API는 예외 처리
+            if (error.config?.url?.includes('/investment-profile/') ||
+                error.config?.url?.includes('/suggests/')) {
+                return Promise.reject(error)
+            }
+
             const authStore = useAuthStore()
             authStore.clearAuth()
             router.push('/login')
@@ -138,6 +144,11 @@ api.interceptors.response.use(
 
         // 404 에러 처리
         if (error.response?.status === 404) {
+            // 프로필 관련 API는 예외 처리
+            if (error.config?.url?.includes('/investment-profile/') ||
+                error.config?.url?.includes('/suggests/')) {
+                return Promise.reject(error)
+            }
             console.error('요청한 리소스를 찾을 수 없습니다:', error.config.url)
         }
 
@@ -183,10 +194,14 @@ export const investmentAPI = {
         timeout: 3000,
         retryCount: 2
     }),
+
+    // 투자 목표 생성
     createGoal: (data) => api.post('/investment-profile/goal/create/', data, {
         timeout: 5000,
         retryCount: 2
     }),
+
+    // 투자 목표 수정
     updateGoal: (data) => api.patch('/investment-profile/goal/', data, {
         timeout: 5000,
         retryCount: 2
@@ -226,28 +241,14 @@ export const surveyAPI = {
 }
 
 export const recommendationAPI = {
-    // 메인 추천 (목표 기반)
-    getByGoal: (params) => api.get('/suggests/recommendations/', { params }),
-
-    // 예금만 추천
-    getDepositOnly: (requiredReturn) =>
-        api.get('/suggests/deposit-only/', { params: { required_return: requiredReturn } }),
-
-    // 적금만 추천
-    getSavingOnly: (requiredReturn) =>
-        api.get('/suggests/saving-only/', { params: { required_return: requiredReturn } }),
-
-    // 주식 추천 저장
-    saveStocks: (stocks) => api.post('/suggests/save-recommendations/', stocks),
-
-    // 저장된 추천 상품 조회
+    // 추천 관련 API
+    getByGoal: () => api.get('/suggests/by-goal/'),
+    getDepositOnly: () => api.get('/suggests/deposit-only/'),
+    getSavingOnly: () => api.get('/suggests/saving-only/'),
+    saveStocks: (stocks) => api.post('/suggests/save-stocks/', { stocks }),
     getSavedRecommendations: () => api.get('/suggests/saved-recommendations/'),
-
-    // 저장된 추천 상품 삭제
     deleteSavedRecommendation: (id) => api.delete(`/suggests/saved-recommendations/${id}/`),
-
-    // 전체 저장된 추천 상품 삭제
-    deleteAllSavedRecommendations: () => api.delete('/suggests/saved-recommendations/'),
+    deleteAllSavedRecommendations: () => api.delete('/suggests/saved-recommendations/delete-all/'),
 }
 
 export const productAPI = {

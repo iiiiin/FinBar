@@ -84,17 +84,20 @@ async function handleLogin() {
   errors.general = ''
 
   try {
-    const res = await axios.post('http://127.0.0.1:8000/accounts/login/', {
+    await auth.login({
       username: username.value,
       password: password.value
     })
-    // 1) Pinia + localStorage 에 토큰 저장
-    auth.setToken(res.data.key)
-    // 2) 로그인 후 원하는 페이지로 이동
     router.push('/')
   } catch (err) {
-    console.error(err)
-    errors.general = err.response?.data?.message || '로그인 중 오류가 발생했습니다'
+    console.error('로그인 에러:', err.response?.data)
+    if (err.response?.status === 400) {
+      errors.general = '아이디 또는 비밀번호가 올바르지 않습니다.'
+    } else if (err.response?.status === 401) {
+      errors.general = '인증에 실패했습니다.'
+    } else {
+      errors.general = '로그인 중 오류가 발생했습니다.'
+    }
   } finally {
     isSubmitting.value = false
   }

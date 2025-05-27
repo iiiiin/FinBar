@@ -149,7 +149,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useRecommendationStore } from '@/stores/recommendationStore';
@@ -160,6 +160,9 @@ import { recommendationAPI } from '@/services/api';
 const router = useRouter();
 const auth = useAuthStore();
 const store = useRecommendationStore();
+
+// 컴포넌트 참조
+const recommendationListRef = ref(null);
 
 // store에서 items를 computed로 가져오기
 const recommendations = computed(() => store.items || []);
@@ -186,6 +189,8 @@ const sectorOptions = [
 
 // 추천 데이터 새로고침
 async function refreshRecommendations() {
+    if (!auth.token) return;
+    
     loading.value = true;
     error.value = null;
     
@@ -195,6 +200,10 @@ async function refreshRecommendations() {
             sector: selectedSector.value
         });
         
+        if (!response?.data) {
+            throw new Error('응답 데이터가 올바르지 않습니다.');
+        }
+
         console.log('API 응답:', response.data);
 
         // 추천 요약 정보 업데이트
@@ -223,12 +232,15 @@ async function refreshRecommendations() {
 
 // 주식 추천 저장
 async function saveStockRecommendation(stock) {
+    if (!stock) return;
+    
     try {
         await store.saveStockRecommendations([stock]);
         showSuccessSnackbar.value = true;
         snackbarMessage.value = '추천 종목이 저장되었습니다.';
     } catch (err) {
         console.error('추천 저장 실패:', err);
+        error.value = err.message || '추천 종목 저장에 실패했습니다.';
     }
 }
 
@@ -238,6 +250,23 @@ onMounted(async () => {
         return;
     }
     await refreshRecommendations();
+});
+
+// 컴포넌트 언마운트 전 정리 작업
+onBeforeUnmount(() => {
+    // 참조 정리
+    if (recommendationListRef.value) {
+        recommendationListRef.value = null;
+    }
+    
+    // 상태 초기화
+    loading.value = false;
+    error.value = null;
+    showSuccessSnackbar.value = false;
+    snackbarMessage.value = '';
+    
+    // 스토어 상태 정리
+    store.clearState();
 });
 </script>
 

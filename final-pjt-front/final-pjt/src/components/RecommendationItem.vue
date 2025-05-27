@@ -1,14 +1,15 @@
 <template>
-    <v-list-item class="recommendation-item">
+    <v-list-item class="recommendation-item" v-if="item">
         <template v-slot:prepend>
-            <v-avatar :color="getTypeColor(item.type)" class="mr-3">
-                <v-icon color="white">{{ getTypeIcon(item.type) }}</v-icon>
-            </v-avatar>
+            <v-icon :color="getMarketColor(item.market)" class="mr-2">
+                {{ getMarketIcon(item.market) }}
+            </v-icon>
         </template>
         
         <v-list-item-title class="d-flex align-center font-weight-bold">
             {{ item.name }}
             <v-chip
+                v-if="item.type"
                 class="ml-2"
                 :color="getTypeColor(item.type)"
                 size="small"
@@ -47,13 +48,14 @@
         
         <template v-slot:append>
             <v-btn 
-                v-if="item.type === '주식'" 
                 color="primary" 
-                variant="tonal" 
+                variant="text" 
                 size="small"
                 @click="$emit('save-stock', item)"
+                :loading="saving"
+                :disabled="saving"
             >
-                <v-icon size="small" class="mr-1">mdi-bookmark-plus</v-icon>
+                <v-icon>mdi-content-save</v-icon>
                 저장
             </v-btn>
         </template>
@@ -61,18 +63,21 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
-
-defineEmits(['save-stock']);
+import { defineProps, defineEmits, ref } from 'vue';
 
 const props = defineProps({
     item: {
         type: Object,
-        required: true
+        required: true,
+        default: () => ({})
     }
 });
 
+const saving = ref(false);
+
 function getTypeColor(type) {
+    if (!type) return 'grey';
+    
     const colors = {
         '예금': 'blue',
         '적금': 'green',
@@ -84,6 +89,8 @@ function getTypeColor(type) {
 }
 
 function getTypeIcon(type) {
+    if (!type) return 'mdi-help-circle';
+    
     const icons = {
         '예금': 'mdi-bank',
         '적금': 'mdi-piggy-bank',
@@ -93,6 +100,40 @@ function getTypeIcon(type) {
     };
     return icons[type] || 'mdi-help-circle';
 }
+
+// 시장별 아이콘 반환
+const getMarketIcon = (market) => {
+    if (!market) return 'mdi-chart-line';
+    
+    switch (market) {
+        case 'KOSPI':
+            return 'mdi-chart-line';
+        case 'KOSDAQ':
+            return 'mdi-chart-bar';
+        case 'KONEX':
+            return 'mdi-chart-bubble';
+        default:
+            return 'mdi-chart-line';
+    }
+}
+
+// 시장별 색상 반환
+const getMarketColor = (market) => {
+    if (!market) return 'grey';
+    
+    switch (market) {
+        case 'KOSPI':
+            return 'primary';
+        case 'KOSDAQ':
+            return 'secondary';
+        case 'KONEX':
+            return 'info';
+        default:
+            return 'grey';
+    }
+}
+
+defineEmits(['save-stock']);
 </script>
 
 <style scoped>
@@ -112,5 +153,14 @@ function getTypeIcon(type) {
 
 .v-chip {
     font-size: 0.75rem;
+}
+
+.v-btn {
+    transition: all 0.2s ease;
+}
+
+.v-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 </style>

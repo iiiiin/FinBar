@@ -358,7 +358,7 @@ async function submitGoal() {
         console.log('생성 응답:', response)
       }
       
-      router.push('/investment-profile')
+      router.push('/recommendations')
     } catch (apiError) {
       console.error('API 에러:', apiError.response?.data || apiError)
       throw apiError

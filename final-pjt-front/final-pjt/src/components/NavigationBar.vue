@@ -177,7 +177,7 @@ import { investmentAPI } from '@/services/api'
 const router    = useRouter()
 const route     = useRoute()
 const authStore = useAuthStore()
-const isAuth    = computed(() => authStore.isLoggedIn)
+const isAuth    = computed(() => authStore.isAuthenticated)
 const drawer    = ref(false)
 
 const navItems = [
@@ -186,6 +186,7 @@ const navItems = [
   { name: 'spotPrice',   title: '현물상품',   route: { name: 'spotPrice' },   icon: '/images/emptyglass.png', activeIcon: '/images/cocktail.png' },
   { name: 'videoStock',  title: '주식정보검색', route: { name: 'videoStock' },  icon: '/images/emptyglass.png', activeIcon: '/images/cocktail.png' },
   { name: 'bankMap',     title: '은행지도',   route: { name: 'bankMap' },     icon: '/images/emptyglass.png', activeIcon: '/images/cocktail.png' },
+  { name: 'investmentProfile', title: '상품 추천', route: { name: 'investmentProfile' }, icon: '/images/emptyglass.png', activeIcon: '/images/cocktail.png' },
   { name: 'articles',    title: '커뮤니티',   route: { name: 'articles' },    icon: '/images/emptyglass.png', activeIcon: '/images/cocktail.png' },
 ]
 
