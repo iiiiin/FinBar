@@ -54,8 +54,18 @@ REST_AUTH = {
 }
 
 
-# 이메일 백엔드: 실제 이메일 발송 대신 콘솔 출력
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# settings.py
+EMAIL_BACKEND       = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST          = "smtp.gmail.com"
+EMAIL_PORT       = 587
+EMAIL_USE_TLS    = True    # ← SSL 대신 TLS 사용
+EMAIL_USE_SSL    = False
+EMAIL_HOST_USER     = "inssafy1110@gmail.com"
+EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default='')
+
+DEFAULT_FROM_EMAIL  = EMAIL_HOST_USER
+
+
 
 # 이메일 인증 요구 여부: 테스트 단계에서는 꺼두기
 ACCOUNT_EMAIL_VERIFICATION = "none"  # 'mandatory' → 'none'

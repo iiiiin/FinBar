@@ -12,6 +12,7 @@ from .models import MarkedVideo
 from django.contrib.auth import get_user_model
 from .serializers import MarkVideoSerializers
 from rest_framework import status
+from .serializers import YouTubeDetailSerializer
 
 # Create your views here.
 
@@ -79,9 +80,37 @@ def marked_video(request):
 @api_view(["GET"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def show_video(request):
-    id = request.GET.get("id")
+def show_video(request, id):
+    """
+    GET /api/youtube/{id}/
+    → YouTube Data API 에서 snippet.title, snippet.description 전체 가져오기
+    """
     URL = "https://www.googleapis.com/youtube/v3/videos"
-    params = {"part": "snippet", "id": id, "key": API_KEY}
-    data = requests.get(url=URL, params=params)
-    return Response(data.json())
+    params = {
+        "part": "snippet",
+        "id":   id,
+        "key":  API_KEY,
+    }
+    resp = requests.get(URL, params=params)
+    if resp.status_code != 200:
+        return Response(
+            {"detail": "YouTube API 호출 실패"},
+            status=resp.status_code
+        )
+
+    items = resp.json().get("items", [])
+    if not items:
+        return Response(
+            {"detail": "해당 영상이 없습니다."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    snippet = items[0]["snippet"]
+    data = {
+        "id":          id,
+        "title":       snippet.get("title", ""),
+        "description": snippet.get("description", ""),
+    }
+    serializer = YouTubeDetailSerializer(data=data)
+    serializer.is_valid(raise_exception=True)
+    return Response(serializer.data)
