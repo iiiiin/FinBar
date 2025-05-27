@@ -87,8 +87,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
+import apiClient from '@/services/api'
 
 const router = useRouter()
 
@@ -110,7 +110,7 @@ async function handleSignup() {
   error.value = ''
 
   try {
-    const res = await axios.post('http://127.0.0.1:8000/accounts/signup/', {
+    const res = await apiClient.post('/accounts/signup/', {
       username:  username.value,
       password1: password1.value,
       password2: password2.value,

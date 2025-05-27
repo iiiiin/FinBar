@@ -8,6 +8,9 @@ class User(AbstractUser):
     age = models.PositiveIntegerField(null=False)
     nickname = models.CharField(max_length=150, null=False)
 
+    def __str__(self):
+        return f"{self.username} ({self.nickname})"
+
 
 # suggests/models.py (또는 별도 앱에서 정의 가능)
 
@@ -50,3 +53,5 @@ class InvestmentProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.risk_type}"
+
+

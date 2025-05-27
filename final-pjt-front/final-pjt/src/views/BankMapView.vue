@@ -102,14 +102,36 @@ let markers = []
 /** Kakao SDK 로드 */
 function loadKakaoMapSdk() {
   return new Promise((resolve, reject) => {
-    if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
-      return resolve()
+    // 이미 로드된 경우
+    if (window.kakao && window.kakao.maps) {
+      kakao.maps.load(() => resolve())
+      return
     }
+
+    // SDK 로드 중인 경우
+    if (document.querySelector('script[src*="dapi.kakao.com/v2/maps/sdk.js"]')) {
+      const checkKakao = setInterval(() => {
+        if (window.kakao && window.kakao.maps) {
+          clearInterval(checkKakao)
+          kakao.maps.load(() => resolve())
+        }
+      }, 100)
+      return
+    }
+
+    // SDK 로드
     const script = document.createElement('script')
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_JS_KEY}&libraries=services&autoload=false`
-    script.defer = true
-    script.onload = () => resolve()
-    script.onerror = () => reject(new Error('Kakao Maps SDK 로드 실패'))
+    script.async = true
+
+    script.onload = () => {
+      kakao.maps.load(() => resolve())
+    }
+
+    script.onerror = () => {
+      reject(new Error('Kakao Maps SDK 로드 실패'))
+    }
+
     document.head.appendChild(script)
   })
 }
@@ -148,39 +170,79 @@ function onGugunChange(code) {
 
 /** 지도 초기화 및 Places 서비스 설정 */
 function initMap(lat, lng) {
+  if (!window.kakao || !window.kakao.maps) {
+    console.error('Kakao Maps SDK가 로드되지 않았습니다.')
+    return
+  }
+
   kakao.maps.load(() => {
-    const container = document.getElementById('map')
-    kakaoMap = new kakao.maps.Map(container, {
-      center: new kakao.maps.LatLng(lat, lng),
-      level: 4
-    })
-    placesService = new kakao.maps.services.Places(kakaoMap)
-    markers.forEach(m => m.setMap(null))
-    markers = []
+    try {
+      const container = document.getElementById('map')
+      if (!container) {
+        console.error('지도를 표시할 DOM 요소를 찾을 수 없습니다.')
+        return
+      }
+
+      kakaoMap = new kakao.maps.Map(container, {
+        center: new kakao.maps.LatLng(lat, lng),
+        level: 4
+      })
+
+      placesService = new kakao.maps.services.Places()
+      markers.forEach(m => m.setMap(null))
+      markers = []
+    } catch (error) {
+      console.error('지도 초기화 실패:', error)
+    }
   })
 }
 
 /** 컴포넌트 마운트 */
 onMounted(async () => {
-  await loadRegions()
-  await loadKakaoMapSdk()
-  let lat = 37.5665, lng = 126.9780
   try {
-    const res = await fetch('http://127.0.0.1:8000/map/', { method: 'POST' })
-    const data = await res.json()
-    lat = data.lat; lng = data.lng
-  } catch {}
-  initMap(lat, lng)
+    await loadRegions()
+    await loadKakaoMapSdk()
+    
+    let lat = 37.5665, lng = 126.9780
+    try {
+      const res = await fetch('http://127.0.0.1:8000/map/', { 
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${localStorage.getItem('token')}`
+        }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        lat = data.lat
+        lng = data.lng
+      }
+    } catch (error) {
+      console.error('위치 정보 조회 실패:', error)
+    }
+    
+    initMap(lat, lng)
+  } catch (error) {
+    console.error('초기화 실패:', error)
+  }
 })
 
 /** 검색 및 마커 생성 */
 function onSearch() {
-  if (!selectedBank.value || !placesService) return
+  if (!selectedBank.value || !placesService) {
+    console.error('검색 조건이 충족되지 않았습니다.')
+    return
+  }
+
   const keyword = [selectedSido.value, selectedGugun.value, selectedBank.value].join(' ')
+  
   kakao.maps.load(() => {
     placesService.keywordSearch(keyword, (result, status) => {
       if (status === kakao.maps.services.Status.OK) {
-        banks.value = result.map(i => ({ name: i.place_name, lat: +i.y, lng: +i.x }))
+        banks.value = result.map(i => ({ 
+          name: i.place_name, 
+          lat: +i.y, 
+          lng: +i.x 
+        }))
         placeMarkers()
       } else {
         console.error('검색 실패:', status)

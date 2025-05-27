@@ -1,7 +1,7 @@
 from .models import StockRecommendation
 from rest_framework import serializers
 from .models import InvestmentQuestion, InvestmentChoice
-from accounts.models import InvestmentGoal
+from investment_profile.models import InvestmentGoal
 
 
 class InvestmentChoiceSerializer(serializers.ModelSerializer):

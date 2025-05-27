@@ -47,6 +47,7 @@ urlpatterns = [
     path("map/", include("maps.urls")),
     path("suggests/", include("suggests.urls")),
     path("bookmarks/", include("my_products.urls")),
+    path('investment-profile/', include('investment_profile.urls')),
 ]
 
 
@@ -70,3 +71,4 @@ if settings.DEBUG:
             name="schema-redoc",
         ),
     ]
+

@@ -15,6 +15,11 @@ import VideoDetailView from '@/views/VideoDetailView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import ProductListView from '@/views/ProductListView.vue'
 import SavingDetailView from '@/views/SavingDetailView.vue'
+import RecommendationPageView from '@/views/RecommendationPageView.vue'
+import SurveyPageView from '@/views/SurveyPageView.vue'
+import InvestmentProfileView from '@/views/InvestmentProfileView.vue'
+import InvestmentGoalView from '@/views/InvestmentGoalView.vue'
+import { investmentAPI } from '@/services/api'
 import HomeView from '@/views/HomeView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 
@@ -25,6 +30,12 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+    },
+    // 랜딩 페이지
+    {
+      path: '/menu',
+      name: 'menu',
+      component: MenuView,
     },
     // 랜딩 페이지
     {
@@ -48,6 +59,12 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
+      component: ProfileView,
+    },
+    // 회원정보 수정 페이지
+    {
+      path: '/profileedit',
+      name: 'profileEdit',
       component: ProfileView,
     },
     // 회원정보 수정 페이지
@@ -128,7 +145,89 @@ const router = createRouter({
       name: 'savingDetail',
       component: SavingDetailView,
     },
+    //투자 성향 설문 
+    {
+      path: '/survey',
+      name: 'survey',
+      component: SurveyPageView,
+      meta: {
+        requiresAuth: true,
+        fromProfile: true  // 프로필 페이지에서만 접근 가능
+      }
+    },
+    // 추천 페이지 
+    {
+      path: '/recommendations',
+      name: 'recommendations',
+      component: RecommendationPageView,
+      meta: {
+        requiresAuth: true,
+        requiresProfile: true,  // 프로필 완성 필요
+        fromProfile: true  // 프로필 페이지에서만 접근 가능
+      }
+    },
+    // 투자 프로필 페이지 라우트 추가
+    {
+      path: '/investment-profile',
+      name: 'investmentProfile',
+      component: InvestmentProfileView,
+      meta: {
+        requiresAuth: true,  // 로그인 필요
+        isProfilePage: true  // 프로필 페이지임을 표시
+      }
+    },
+    // 투자 목표 설정 페이지
+    {
+      path: '/investment-goal',
+      name: 'investmentGoal',
+      component: InvestmentGoalView,
+      meta: {
+        requiresAuth: true,  // 로그인 필요
+        fromProfile: true  // 프로필 페이지에서만 접근 가능
+      }
+    }
   ],
+})
+
+// 네비게이션 가드 수정
+router.beforeEach(async (to, from, next) => {
+  const token = localStorage.getItem('token')
+
+  // 인증이 필요한 페이지 체크
+  if (to.meta.requiresAuth && !token) {
+    next({ name: 'login' })
+    return
+  }
+
+  // 프로필 페이지에서만 접근 가능한 페이지 체크
+  if (to.meta.fromProfile && !from.meta.isProfilePage && !to.query.from === 'profile') {
+    next({ name: 'investmentProfile' })
+    return
+  }
+
+  // 프로필 완성이 필요한 페이지 체크
+  if (to.meta.requiresProfile && token) {
+    try {
+      const { data } = await investmentAPI.checkStatus()
+
+      // 프로필과 목표가 모두 완성된 경우에만 추천 페이지로 이동
+      if (data.has_investment_profile && data.has_investment_goal) {
+        next()
+        return
+      }
+
+      // 프로필이 완성되지 않은 경우
+      next({ name: 'investmentProfile' })
+      return
+    } catch (error) {
+      console.error('프로필 상태 확인 실패:', error)
+      // API 호출 실패 시에도 프로필 페이지로 이동
+      next({ name: 'investmentProfile' })
+      return
+    }
+  }
+
+  next()
 })
 
 export default router

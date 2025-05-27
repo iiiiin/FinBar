@@ -108,7 +108,7 @@ class SavingProduct(models.Model):
     risk_level = models.CharField(
         max_length=10,
         choices=[("low", "낮음"), ("medium", "중간"), ("high", "높음")],
-        default="low",
+        default="medium",
     )
     category = models.ForeignKey(
         ProductCategory, on_delete=models.SET_NULL, null=True, default=2

@@ -101,7 +101,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import axios from 'axios'
+import apiClient from '@/services/api'
 import NavigationBar from '@/components/NavigationBar.vue'
 import Title from '@/components/Title.vue'
 import { useAuthStore } from '@/stores/auth'
@@ -119,11 +119,6 @@ const newComment = ref('')
 const editingId = ref(null)
 const editContent = ref('')
 
-// 로그인 여부 체크
-if (!auth.isLoggedIn) {
-  router.replace({ name: 'login' })
-}
-
 // 글 소유자 여부
 const isOwner = computed(() => auth.username === article.value.username)
 
@@ -135,7 +130,7 @@ function formatDate(dateStr) {
 // 댓글 목록 로드
 async function loadComments() {
   try {
-    const { data: cmts } = await axios.get(`http://127.0.0.1:8000/articles/${route.params.id}/comment/`)
+    const { data: cmts } = await apiClient.get(`/articles/${route.params.id}/comment/`)
     comments.value = cmts
   } catch (e) {
     if (e.response?.status === 404) comments.value = []
@@ -146,23 +141,28 @@ async function loadComments() {
 // 게시글 로드 및 댓글 로드
 async function loadData() {
   try {
-    const { data: art } = await axios.get(`http://127.0.0.1:8000/articles/${route.params.id}/`)
+    const { data: art } = await apiClient.get(`/articles/${route.params.id}/`)
     article.value = art
+    comments.value = art.comments || []
   } catch (e) {
     console.error(e)
   }
-  await loadComments()
 }
 
 onMounted(loadData)
 
 // 댓글 작성
 async function addComment() {
+  if (!auth.isAuthenticated) {
+    alert('댓글을 작성하려면 로그인이 필요합니다.')
+    router.push({ name: 'login' })
+    return
+  }
   if (!newComment.value.trim()) return
   try {
-    await axios.post(`http://127.0.0.1:8000/articles/${route.params.id}/comment/`, { content: newComment.value })
+    await apiClient.post(`/articles/${route.params.id}/comment/`, { content: newComment.value })
     newComment.value = ''
-    await loadComments()
+    await loadData()
   } catch (e) {
     console.error(e)
     alert('댓글 작성에 실패했습니다.')
@@ -171,8 +171,13 @@ async function addComment() {
 
 // 댓글 삭제
 async function deleteComment(id) {
+  if (!auth.isAuthenticated) {
+    alert('댓글을 삭제하려면 로그인이 필요합니다.')
+    router.push({ name: 'login' })
+    return
+  }
   try {
-    await axios.delete(`http://127.0.0.1:8000/articles/${route.params.id}/comment/${id}/`)
+    await apiClient.delete(`/articles/${route.params.id}/comment/${id}/`)
     await loadComments()
   } catch (e) {
     console.error(e)
@@ -182,26 +187,38 @@ async function deleteComment(id) {
 
 // 댓글 수정 시작
 function startEdit(comment) {
+  if (!auth.isAuthenticated) {
+    alert('댓글을 수정하려면 로그인이 필요합니다.')
+    router.push({ name: 'login' })
+    return
+  }
   editingId.value = comment.id
   editContent.value = comment.content
 }
+
 // 댓글 수정 취소
 function cancelEdit() {
   editingId.value = null
   editContent.value = ''
 }
+
 // 댓글 수정 저장
 async function saveEdit(id) {
+  if (!auth.isAuthenticated) {
+    alert('댓글을 수정하려면 로그인이 필요합니다.')
+    router.push({ name: 'login' })
+    return
+  }
   if (!editContent.value.trim()) return
   try {
-    await axios.put(
-      `http://127.0.0.1:8000/articles/${route.params.id}/comment/${id}/`,
+    await apiClient.put(
+      `/articles/${route.params.id}/comment/${id}/`,
       { article_pk: route.params.id,
         comment_pk: id,
         content: editContent.value }
     )
     cancelEdit()
-    await loadComments()
+    await loadData()
   } catch (e) {
     console.error(e)
     alert('댓글 수정에 실패했습니다.')
@@ -212,17 +229,19 @@ async function saveEdit(id) {
 function goBack() {
   router.back()
 }
+
 // 게시글 수정
 function goEdit() {
   if (!isOwner.value) return
   router.push({ name: 'articleUpdate', params: { id: route.params.id } })
 }
+
 // 게시글 삭제
 async function deleteArticle() {
   if (!isOwner.value) return
   if (!confirm('정말 삭제하시겠습니까?')) return
   try {
-    await axios.delete(`http://127.0.0.1:8000/articles/${route.params.id}/`)
+    await apiClient.delete(`/articles/${route.params.id}/`)
     router.push({ name: 'articles' })
   } catch (e) {
     console.error(e)

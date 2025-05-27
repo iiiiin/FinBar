@@ -34,5 +34,6 @@ def determine_recommendation_factors(required_return, risk_type, preferred_perio
     return {
         "by_return": by_return,
         "by_risk": by_risk,
-        "final": final
+        "final": final,
+        "preferred_period": preferred_period
     }
