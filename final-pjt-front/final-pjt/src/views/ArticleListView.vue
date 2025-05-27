@@ -61,7 +61,7 @@ const articles   = ref([])
 const page       = ref(1)
 const totalPages = ref(1)
 const auth = useAuthStore()
-const isAuth     = computed(() => auth.isLoggedIn)
+const isAuth     = computed(() => auth.token)
 
 // 게시글 목록 조회
 async function fetchArticles() {
