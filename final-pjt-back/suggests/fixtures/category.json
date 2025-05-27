@@ -1,0 +1,100 @@
+[
+    {
+        "model": "suggests.productcategory",
+        "pk": 1,
+        "fields": {
+            "category_name": "예금"
+        }
+    },
+    {
+        "model": "suggests.productcategory",
+        "pk": 2,
+        "fields": {
+            "category_name": "적금"
+        }
+    },
+    {
+        "model": "suggests.productcategory",
+        "pk": 3,
+        "fields": {
+            "category_name": "금"
+        }
+    },
+    {
+        "model": "suggests.productcategory",
+        "pk": 4,
+        "fields": {
+            "category_name": "은"
+        }
+    },
+    {
+        "model": "suggests.productcategory",
+        "pk": 5,
+        "fields": {
+            "category_name": "주식"
+        }
+    },
+    {
+        "model": "suggests.productriskcategory",
+        "pk": 1,
+        "fields": {
+            "product_type": "정기예금",
+            "default_risk_level": "low",
+            "category": 1
+        }
+    },
+    {
+        "model": "suggests.productriskcategory",
+        "pk": 2,
+        "fields": {
+            "product_type": "정기적금",
+            "default_risk_level": "low",
+            "category": 2
+        }
+    },
+    {
+        "model": "suggests.productriskcategory",
+        "pk": 3,
+        "fields": {
+            "product_type": "금ETF",
+            "default_risk_level": "medium",
+            "category": 3
+        }
+    },
+    {
+        "model": "suggests.productriskcategory",
+        "pk": 4,
+        "fields": {
+            "product_type": "골드바",
+            "default_risk_level": "medium",
+            "category": 3
+        }
+    },
+    {
+        "model": "suggests.productriskcategory",
+        "pk": 5,
+        "fields": {
+            "product_type": "은통장",
+            "default_risk_level": "medium",
+            "category": 4
+        }
+    },
+    {
+        "model": "suggests.productriskcategory",
+        "pk": 6,
+        "fields": {
+            "product_type": "주식형펀드",
+            "default_risk_level": "high",
+            "category": 5
+        }
+    },
+    {
+        "model": "suggests.productriskcategory",
+        "pk": 7,
+        "fields": {
+            "product_type": "레버리지ETF",
+            "default_risk_level": "high",
+            "category": 5
+        }
+    }
+]
