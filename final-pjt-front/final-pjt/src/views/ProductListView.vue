@@ -51,27 +51,26 @@
       </v-col>
     </v-row>
 
+    <div v-if="loading" class="loading-images">
+      <img
+        :src="loadingImages[currentLoadingIndex]"
+        alt="로딩 중"
+        class="loading-img"
+      />
+    </div>
+
     <!-- 결과 테이블 -->
     <v-data-table
       :headers="headers"
       :items="loading ? [] : paginatedItems"
       :loading="loading"
       class="elevation-1"
-      :items-per-page="perPage"
       item-key="key"
+      fixed-header
+      height="400px"
+      hide-default-footer
     >
-      <!-- 커스텀 헤더 슬롯: props.headers로 헤더 행 렌더링 -->
-      <template #header="{ props }">
-        <tr>
-          <th
-            v-for="h in props.headers"
-            :key="h.value"
-            class="text-left"
-          >
-            {{ h.text }}
-          </th>
-        </tr>
-      </template>
+
 
       <!-- 상품명 컬럼: 클릭 시 상세 페이지로 이동 -->
       <template #item.finPrdtNm="{ item }">
@@ -92,7 +91,9 @@
       :total="totalPages"
       @change="onPageChange"
     />
+    <PlaceFooter src="/images/plate.png" alt="메뉴접시" />
   </v-container>
+  
 </template>
 
 <script>
@@ -100,18 +101,40 @@ import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
 import Title from '@/components/Title.vue'
 import Pagination from '@/components/Pagination.vue'
+import PlaceFooter from '@/components/PlaceFooter.vue'
 
 export default {
   name: 'ProductListView',
-  components: { NavigationBar, Title, Pagination },
+  components: { NavigationBar, Title, Pagination, PlaceFooter },
   data() {
     return {
       type: 'deposit',               // 예금/적금 상태
       rawProducts: [],               // API에서 받아온 데이터
       filters: { bank: null, term: null },
       loading: false,
+      loadingImages: [
+        'images/shaker1.png',
+        'images/shaker2.png'
+      ],
+      currentLoadingIndex: 0,
+      _loadingTimer: null,
       currentPage: 1,                // 현재 페이지
       perPage: 10,                   // 페이지당 항목 수
+    }
+  },
+  watch: {
+    loading(newVal) {
+      if (newVal) {
+        // 로딩 시작 시 500ms마다 인덱스 업데이트
+        this._loadingTimer = setInterval(() => {
+          this.currentLoadingIndex =
+            (this.currentLoadingIndex + 1) % this.loadingImages.length
+        }, 500)
+      } else {
+        // 로딩 끝나면 타이머 해제, 인덱스 초기화
+        clearInterval(this._loadingTimer)
+        this.currentLoadingIndex = 0
+      }
     }
   },
   computed: {
@@ -238,5 +261,43 @@ export default {
 </script>
 
 <style scoped>
-/* 추가 스타일 필요 시 작성 */
+.plate-footer {
+  max-width: 800px;    /* v-container 와 동일 너비 */
+  margin: 0 auto;      /* 가운데 정렬 */
+}
+.plate-img {
+  display: block;      /* inline-block 여백 제거 */
+  width: 100%;         /* 부모(plate-footer) 폭에 딱 맞춤 */
+  height: auto;        /* 원본 비율 유지 */
+}
+/* Vuetify v-btn 기본 스타일 오버라이드 */
+::v-deep .v-btn {
+  background-color: #ffffff !important;       /* 흰 배경 */
+  color: #000000 !important;                  /* 검은 글씨 */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important; /* 연한 회색 그림자 */
+  border: none !important;                    /* 테두리 제거 */
+}
+
+/* Hover 시 그림자만 살짝 강조 */
+::v-deep .v-btn:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* 선택된(primary) 혹은 text prop 은 그대로 두고, 색만 바뀌게 */
+::v-deep .v-btn--text {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: #000000 !important;
+}
+.loading-images {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px; /* 원하는 높이만큼 */
+}
+
+.loading-img {
+  width: 120px;
+  height: auto;
+}
 </style>
