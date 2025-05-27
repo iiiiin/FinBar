@@ -76,14 +76,7 @@ async function handleLogin() {
   errors.general = ''
   try {
     // 디버깅 로그
-    console.log('로그인 시도:', { username: username.value })
     await auth.login({ username: username.value, password: password.value })
-    // 로그인 성공 후 상태 확인
-    console.log('로그인 성공 후 상태:', {
-      token: auth.token,
-      localStorage: localStorage.getItem('token'),
-      axiosHeader: axios.defaults.headers.common['Authorization']
-    })
     router.push('/')
   } catch (err) {
     console.error('로그인 에러:', err.response?.data || err)
