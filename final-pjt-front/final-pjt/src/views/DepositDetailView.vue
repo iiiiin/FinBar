@@ -8,14 +8,17 @@
       </v-col>
       <v-col cols="2" class="text-right">
         <!-- 북마크 상태에 따라 텍스트 토글 -->
-        <v-btn
-          color="black"
-          class="white--text"
-          @click="toggleBookmark"
-          :loading="bookmarkLoading"
-        >
-          {{ isBookmarked ? '가입취소' : '가입' }}
-        </v-btn>
+      <BookmarkToggle
+      v-if="product.deposit_product_id != null"
+      :initialToggled="isBookmarked"
+      :bookmarkId="bookmarkId"
+      :resource-id="product.deposit_product_id"
+      :apiClient="apiClient"
+      baseUrl="http://127.0.0.1:8000/bookmarks/deposits"
+      @update:toggled="isBookmarked = $event"
+      @update:bookmarkId="bookmarkId = $event"
+      @snackbar="showSnackbar($event.text, $event.color)"
+    />
       </v-col>
     </v-row>
 
@@ -64,12 +67,13 @@
 import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
 import Title from '@/components/Title.vue'
+import BookmarkToggle from '@/components/BookmarkToggle.vue'
 import { useAuthStore } from '@/stores/auth'
 
 
 export default {
   name: 'DepositDetailView',
-  components: { NavigationBar, Title },
+  components: { NavigationBar, Title, BookmarkToggle },
   data() {
     return {
       product: {},
@@ -83,6 +87,7 @@ export default {
         color: 'grey lighten-2',
         timeout: 3000,
       },
+      apiClient: axios,
     }
   },
   computed: {
