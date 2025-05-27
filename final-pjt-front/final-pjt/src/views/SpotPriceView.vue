@@ -84,11 +84,22 @@
     <v-row>
       <v-col cols="12">
         <Line
-          v-if="chartData"
+          v-if="chartData.datasets[0].data.length"
           :data="chartData"
           :options="chartOptions"
           style="height: 400px;"
         />
+        <!-- 시작/종료일을 모두 선택했고, 데이터가 없으면 알림 -->
+    <v-alert
+      v-else-if="startDate && endDate"
+      color="grey darken-1"
+      type="info"
+      border="start"
+      colored-border
+      class="my-4 white--text"
+    >
+      선택한 기간에 대한 데이터가 없습니다.
+    </v-alert>
       </v-col>
     </v-row>
     <PlaceFooter src="/images/plate.png" alt="메뉴접시" />
