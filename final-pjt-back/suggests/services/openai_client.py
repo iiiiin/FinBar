@@ -51,12 +51,11 @@ def ask_gpt_for_product_recommendation(prompt: str, temperature: float = 0.7) ->
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "당신은 금융 전문가입니다."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=temperature,
         )
 
         # 최신 응답 구조에 맞는 content 추출

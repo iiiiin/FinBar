@@ -11,10 +11,15 @@ import ProfileEditView from '@/views/ProfileEditView.vue'
 import SignupView from '@/views/SignupView.vue'
 import SpotPriceView from '@/views/SpotPriceView.vue'
 import StockVideoView from '@/views/StockVideoView.vue'
-import VideoDetailView from '@/views/videoDetailView.vue'
+import VideoDetailView from '@/views/VideoDetailView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import ProductListView from '@/views/ProductListView.vue'
 import SavingDetailView from '@/views/SavingDetailView.vue'
+import RecommendationPageView from '@/views/RecommendationPageView.vue'
+import SurveyPageView from '@/views/SurveyPageView.vue'
+import InvestmentProfileView from '@/views/InvestmentProfileView.vue'
+import InvestmentGoalView from '@/views/InvestmentGoalView.vue'
+import { investmentAPI } from '@/services/api'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -116,7 +121,67 @@ const router = createRouter({
       name: 'savingDetail',
       component: SavingDetailView,
     },
+    //투자 성향 설문 
+    {
+      path: '/survey',
+      name: 'survey',
+      component: SurveyPageView,
+      meta: { requiresAuth: true }
+    },
+    // 추천 페이지 
+    {
+      path: '/recommendations',
+      name: 'recommendations',
+      component: RecommendationPageView,
+      meta: {
+        requiresAuth: true,
+        requiresProfile: true  // 프로필 완성 필요
+      }
+    },
+    // 투자 프로필 페이지 라우트 추가
+    {
+      path: '/investment-profile',
+      name: 'investmentProfile',
+      component: InvestmentProfileView,
+      meta: { requiresAuth: true }  // 로그인 필요
+    },
+    // 투자 목표 설정 페이지
+    {
+      path: '/investment-goal',
+      name: 'investmentGoal',
+      component: InvestmentGoalView,
+      meta: { requiresAuth: true }  // 로그인 필요
+    }
   ],
+})
+
+// 네비게이션 가드 추가
+router.beforeEach(async (to, from, next) => {
+  const token = localStorage.getItem('token')
+
+  // 인증이 필요한 페이지 체크
+  if (to.meta.requiresAuth && !token) {
+    next({ name: 'login' })
+    return
+  }
+
+  // 프로필 완성이 필요한 페이지 체크
+  if (to.meta.requiresProfile && token) {
+    try {
+      const { data } = await investmentAPI.checkStatus()
+
+      if (!data.has_investment_profile || !data.has_investment_goal) {
+        next({ name: 'investmentProfile' })
+        return
+      }
+    } catch (error) {
+      console.error('프로필 상태 확인 실패:', error)
+      next({ name: 'investmentProfile' })
+      return
+    }
+  }
+
+  next()
 })
 
 export default router

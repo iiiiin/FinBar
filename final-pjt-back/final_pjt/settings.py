@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "maps",
     "my_products",
     "suggests",
+    "investment_profile",
     "django_filters",
     "django_celery_results",
     "django_celery_beat",
@@ -112,6 +113,9 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.AllowAny",
     ],
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
 }
 
 
@@ -132,6 +136,17 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:6379",  # celery 자동화
     "http://127.0.0.1:6379",  # celery 자동화
+]
+
+# CORS 추가 설정
+CORS_ALLOW_CREDENTIALS = True  # credentials 허용
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
 ]
 
 
@@ -279,9 +294,4 @@ LOGGING = {
         "handlers": ["console"],
         "level": "INFO",
     },
-}
-
-REST_FRAMEWORK = {
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 10,
 }

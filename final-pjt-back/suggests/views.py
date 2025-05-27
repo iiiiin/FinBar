@@ -1,5 +1,5 @@
 # suggests/views.py
-from accounts.models import InvestmentGoal, InvestmentProfile
+from investment_profile.models import InvestmentGoal, InvestmentProfile
 from financial_products.serializers import (
     ProductRecommendationSerializer,
     DepositSavingRecommendationResponseSerializer,
@@ -12,15 +12,15 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework import status
 
-from accounts.serializers import InvestmentGoalSerializer
-from .models import InvestmentQuestion, InvestmentChoice
+from investment_profile.serializers import InvestmentGoalSerializer
+from .models import InvestmentQuestion, InvestmentChoice, Recommendation
 from .serializers import (
     InvestmentQuestionSerializer,
     InvestmentAnswerSerializer,
     StockRecommendationCreateSerializer
 )
-from suggests.services.recommendation import _get_top_product_recommendations
-from suggests.services.recommendation import (
+from suggests.services.temp import _get_top_product_recommendations
+from suggests.services.temp import (
     get_deposit_only_recommendations,
     get_saving_only_recommendations,
     get_deposit_saving_recommendations,
@@ -30,8 +30,8 @@ RISK_LEVEL = {
     "안정형": ["low"],
     "안정추구형": ["low", "medium"],
     "위험중립형": ["medium"],
-    "적관통자형": ["medium", "high"],
-    "공격통자형": ["high"],
+    "적극투자형": ["medium", "high"],
+    "공격투자형": ["high"],
 }
 
 MARKET_CHOICES = ["KOSPI", "KOSDAQ", "KONEX"]
@@ -54,17 +54,40 @@ def get_investment_questions(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def submit_investment_answers(request):
-    serializer = InvestmentAnswerSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=True):
+    try:
+        serializer = InvestmentAnswerSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({"error": "Invalid data format", "details": serializer.errors}, status=400)
+
         answers = serializer.validated_data["answers"]
+        if not answers:
+            return Response({"error": "No answers provided"}, status=400)
+
         total_score = 0
         for ans in answers:
             try:
-                choice = InvestmentChoice.objects.get(id=ans["choice_id"])
+                question_id = ans.get("question_id")
+                choice_id = ans.get("choice_id")
+
+                if not question_id or not choice_id:
+                    return Response({"error": f"Invalid answer format: {ans}"}, status=400)
+
+                # 질문 존재 여부 확인
+                if not InvestmentQuestion.objects.filter(id=question_id).exists():
+                    return Response({"error": f"Question {question_id} does not exist"}, status=400)
+
+                choice = InvestmentChoice.objects.get(
+                    id=choice_id, question_id=question_id)
                 total_score += choice.score
             except InvestmentChoice.DoesNotExist:
-                return Response({"error": "Invalid choice ID"}, status=400)
+                return Response(
+                    {"error": f"Invalid choice ID {choice_id} for question {question_id}"},
+                    status=400
+                )
+            except Exception as e:
+                return Response({"error": str(e)}, status=400)
 
+        # 점수에 따른 위험 유형 결정
         if total_score <= 7:
             risk_type = "안정형"
         elif total_score <= 11:
@@ -72,21 +95,30 @@ def submit_investment_answers(request):
         elif total_score <= 15:
             risk_type = "위험중립형"
         elif total_score <= 19:
-            risk_type = "적관통자형"
+            risk_type = "적극투자형"
         else:
-            risk_type = "공격통자형"
+            risk_type = "공격투자형"
 
-        profile, _ = InvestmentProfile.objects.update_or_create(
-            user=request.user,
-            defaults={"total_score": total_score, "risk_type": risk_type},
-        )
+        # 프로필 업데이트 또는 생성
+        try:
+            profile, _ = InvestmentProfile.objects.update_or_create(
+                user=request.user,
+                defaults={
+                    "total_score": total_score,
+                    "risk_type": risk_type
+                }
+            )
 
-        return Response({
-            "risk_type": profile.risk_type,
-            "total_score": profile.total_score,
-            "evaluated_at": profile.evaluated_at,
-        })
+            return Response({
+                "risk_type": profile.risk_type,
+                "total_score": profile.total_score,
+                "evaluated_at": profile.evaluated_at
+            })
+        except Exception as e:
+            return Response({"error": f"Failed to update profile: {str(e)}"}, status=500)
 
+    except Exception as e:
+        return Response({"error": f"Unexpected error: {str(e)}"}, status=500)
 
 
 @api_view(["POST"])
@@ -105,27 +137,22 @@ def save_recommended_stocks(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def investment_goal_view(request):
-    user = request.user
+    """
+    [DEPRECATED] 이 API는 더 이상 사용되지 않습니다.
+    대신 /api/investment-profile/goal/ 엔드포인트를 사용하세요.
 
-    try:
-        goal = user.goal
-    except InvestmentGoal.DoesNotExist:
-        if request.method == "GET":
-            return Response({"detail": "목표 자사 정보가 없습니다."}, status=404)
-        goal = None
-
-    if request.method == "GET":
-        serializer = InvestmentGoalSerializer(goal)
-        return Response(serializer.data)
-
-    serializer = InvestmentGoalSerializer(
-        instance=goal, data=request.data, partial=True)
-    if serializer.is_valid():
-        goal = serializer.save(user=user)
-        goal.expected_annual_return = goal.calculate_required_return()
-        goal.save()
-        return Response(InvestmentGoalSerializer(goal).data)
-    return Response(serializer.errors, status=400)
+    - GET: /api/investment-profile/goal/
+    - POST: /api/investment-profile/goal/create/
+    - PATCH: /api/investment-profile/goal/
+    """
+    return Response({
+        "message": "이 API는 deprecated 되었습니다.",
+        "new_endpoints": {
+            "get": "/api/investment-profile/goal/",
+            "create": "/api/investment-profile/goal/create/",
+            "update": "/api/investment-profile/goal/"
+        }
+    }, status=status.HTTP_410_GONE)
 
 
 def parse_required_return_param(request):
@@ -146,18 +173,22 @@ def investment_product_recommendation_view(request):
     user = request.user
 
     try:
-        profile = user.investmentprofile
-        goal = user.goal
+        profile = user.investment_profile
+        goal = user.investment_goal
     except (InvestmentProfile.DoesNotExist, InvestmentGoal.DoesNotExist):
         return Response({"detail": "투자 성향 또는 목표 자산 정보가 없습니다."}, status=400)
 
     required_return = goal.calculate_required_return()
+    preferred_period = goal.preferred_period
     goal.expected_annual_return = required_return
     goal.save()
 
     selected_market = request.GET.get("market")
     selected_sector = request.GET.get("sector")
     category = request.GET.get("category")  # optional
+
+    # preferred_period는 쿼리 파라미터가 없으면 DB에 저장된 목표 기간 사용
+    req_period = request.GET.get("preferred_period", preferred_period)
 
     user_info = {
         "risk_type": profile.risk_type,
@@ -170,33 +201,51 @@ def investment_product_recommendation_view(request):
     )
     recommendation_type = factors["final"]
 
+    # 추천 이력 저장
+    recommendation_record = Recommendation.objects.create(
+        user=user,
+        current_asset=goal.current_asset,
+        target_asset=goal.target_asset,
+        target_years=goal.target_years,
+        required_return=required_return,
+        total_score=profile.total_score,
+        risk_type=profile.risk_type
+    )
+
     if recommendation_type == "예금":
-        return include_factors(_handle_deposit(required_return), factors)
+        response = include_factors(_handle_deposit(required_return), factors)
 
     elif recommendation_type == "예적금 혼합":
-        return include_factors(_handle_deposit_saving(required_return, category), factors)
+        response = include_factors(_handle_deposit_saving(
+            required_return, category), factors)
 
     elif recommendation_type in ["적금 + 주식(안정형)", "적금+주식"]:
-        return include_factors(
+        response = include_factors(
             _handle_saving_plus_stock(
                 required_return, user_info, selected_market, selected_sector),
             factors
         )
 
     elif recommendation_type.startswith("주식"):
-        return include_factors(
+        response = include_factors(
             _handle_stock_only(required_return, user_info,
                                selected_market, selected_sector),
             factors
         )
 
     elif recommendation_type.startswith("경고"):
-        return include_factors(
+        response = include_factors(
             _handle_warning(required_return, category),
             factors
         )
+    else:
+        response = Response({"detail": "추천 조건이 일치하지 않습니다."}, status=400)
 
-    return Response({"detail": "추천 조건이 일치하지 않습니다."}, status=400)
+    # 응답에 추천 ID 추가
+    if response.status_code == 200:
+        response.data['recommendation_id'] = recommendation_record.id
+
+    return response
 
 
 @api_view(["GET"])
@@ -262,12 +311,18 @@ def _handle_saving(required_return):
 
 
 def _handle_deposit_saving(required_return, category=None):
-    items = get_deposit_saving_recommendations(required_return, category)
 
+    # items = get_deposit_saving_recommendations(required_return, category)
+    items = get_deposit_saving_recommendations(
+        required_return,
+        category,
+        preferred_period=int(req_period)
+    )
     if not items:
         return Response({
             "recommendation_type": "예적금",
             "required_return": required_return,
+            "preferred_period": int(req_period),
             "message": "조건을 만족하는 예금/적금 상품이 없습니다.",
             "items": []
         })

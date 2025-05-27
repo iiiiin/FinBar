@@ -2,34 +2,43 @@
 
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import { authAPI } from '@/services/api'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    token: localStorage.getItem('token') || '',
-    username: localStorage.getItem('username') || '',
+    token: localStorage.getItem('token') || null,
     user: null,
   }),
   getters: {
-    // 토큰이 있으면 로그인 상태로 간주
-    isLoggedIn: (state) => !!state.token,
+    isAuthenticated: (state) => !!state.token,
+    getToken: (state) => state.token,
+    getUser: (state) => state.user,
   },
   actions: {
-    setToken(token, username) {
+    setToken(token) {
       this.token = token
-      this.username = username
       localStorage.setItem('token', token)
-      localStorage.setItem('username', username)
       axios.defaults.headers.common['Authorization'] = `Token ${token}`
     },
     clearAuth() {
-      this.token = ''
+      this.token = null
       this.user = null
       localStorage.removeItem('token')
       delete axios.defaults.headers.common['Authorization']
     },
-    logout() {
-      axios.post('http://127.0.0.1:8000/accounts/logout/')
-      this.clearAuth()
-    }
+    setUser(user) {
+      this.user = user
+    },
+    async logout() {
+      try {
+        await authAPI.logout()
+      } catch (error) {
+        console.error('로그아웃 API 호출 실패:', error)
+      } finally {
+        this.clearAuth()
+      }
+    },
   },
+}, {
+  strict: false
 })

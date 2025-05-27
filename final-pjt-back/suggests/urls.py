@@ -18,4 +18,8 @@ urlpatterns = [
          name="deposit-only-recommendation"),
     path("saving-only/", views.saving_only_recommendation_view,
          name="saving-only-recommendation"),
+    
+    # 주식 추천 저장
+    path("save-stocks/", views.save_recommended_stocks,
+         name="save-recommended-stocks"),
 ]
