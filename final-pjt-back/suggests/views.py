@@ -94,10 +94,10 @@ def get_investment_questions(request):
             Prefetch(
                 "choices",
                 queryset=InvestmentChoice.objects.only(
-                    "id", "content", "score", "question_id"
+                    "id", "choice_text", "score", "question_id"
                 ),
             )
-        ).only("id", "content", "order")
+        ).only("id", "question_text")
 
         serializer = InvestmentQuestionSerializer(questions, many=True)
         response_data = serializer.data
