@@ -123,6 +123,7 @@ onMounted(async () => {
   loading.value = true
   try {
     const { data } = await axios.get('http://127.0.0.1:8000/accounts/user/')
+    console.log(data)
     form.value.username = data.username
     form.value.email    = data.email
     form.value.nickname = data.nickname

@@ -159,6 +159,7 @@ class DepositProductOptionsReadSerializer(serializers.ModelSerializer):
 
 
 class DepositProductReadSerializer(serializers.ModelSerializer):
+    deposit_product_id = serializers.ReadOnlyField(source='id')
     options = DepositProductOptionsReadSerializer(
         source="depositproductoptions", many=True, read_only=True
     )
@@ -166,6 +167,7 @@ class DepositProductReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepositProduct
         fields = (
+            "deposit_product_id",
             "fin_co_no",
             "kor_co_nm",
             "fin_prdt_cd",
@@ -196,6 +198,7 @@ class SavingProductOptionsReadSerializer(serializers.ModelSerializer):
 
 
 class SavingProductReadSerializer(serializers.ModelSerializer):
+    saving_product_id = serializers.ReadOnlyField(source='id')
     options = SavingProductOptionsReadSerializer(
         source="savingproductoptions", many=True, read_only=True
     )
@@ -203,6 +206,7 @@ class SavingProductReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = SavingProduct
         fields = (
+            "saving_product_id",
             "fin_co_no",
             "kor_co_nm",
             "fin_prdt_cd",

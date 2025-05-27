@@ -5,7 +5,7 @@ import ArticleUpdateView from '@/views/ArticleUpdateView.vue'
 import BankMapView from '@/views/BankMapView.vue'
 import DepositDetailView from '@/views/DepositDetailView.vue'
 import ErrorView from '@/views/ErrorView.vue'
-import HomeView from '@/views/HomeView.vue'
+import MenuView from '@/views/MenuView.vue'
 import LoginView from '@/views/LoginView.vue'
 import ProfileEditView from '@/views/ProfileEditView.vue'
 import SignupView from '@/views/SignupView.vue'
@@ -20,15 +20,21 @@ import SurveyPageView from '@/views/SurveyPageView.vue'
 import InvestmentProfileView from '@/views/InvestmentProfileView.vue'
 import InvestmentGoalView from '@/views/InvestmentGoalView.vue'
 import { investmentAPI } from '@/services/api'
+import HomeView from '@/views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    // 랜딩 페이지
     {
       path: '/',
       name: 'home',
       component: HomeView,
+    },
+    // 랜딩 페이지
+    {
+      path: '/menu',
+      name: 'menu',
+      component: MenuView,
     },
     // 회원가입 페이지
     {
@@ -47,7 +53,6 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileEditView,
-      meta: { requiresAuth: true }
     },
     // 커뮤니티 게시글 목록 페이지
     {
