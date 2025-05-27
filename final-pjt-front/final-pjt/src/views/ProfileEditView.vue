@@ -33,11 +33,11 @@
                 required
               />
               <v-select
-              v-model="form.age"
-              label="연령대"
-              :items="ageOptions"
-              :rules="ageRules"
-              required
+                v-model.number="form.age"
+                label="연령대"
+                :items="ageOptions"
+                :rules="ageRules"
+                required
               />
               <v-btn
                 class="mt-4"
@@ -103,7 +103,7 @@ const form = ref({
   username: '',
   email: '',
   nickname: '',
-  age: '',
+  age: 0,
 })
 const passwordNew     = ref('')
 const passwordConfirm = ref('')
@@ -114,7 +114,7 @@ const error   = ref('')
 // 유효성 룰
 const emailRules    = [v => !!v || '이메일을 입력해주세요', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || '유효한 이메일을 입력해주세요']
 const nicknameRules = [v => !!v || '닉네임을 입력해주세요']
-const ageRules      = [v => !!v || '연령대를 입력해주세요', v => v > 0 && Number.isInteger(+v) || '유효한 연령대를 입력해주세요']
+const ageRules      = [v => v > 0 || '연령대를 입력해주세요', v => Number.isInteger(v) || '유효한 연령대를 입력해주세요']
 const passwordRules = [v => !passwordNew.value || v.length >= 6 || '새 비밀번호는 최소 6자리 이상이어야 합니다']
 const ageOptions = Array.from({ length: 10 }, (_, i) => (i + 1) * 10)
 
@@ -123,11 +123,10 @@ onMounted(async () => {
   loading.value = true
   try {
     const { data } = await axios.get('http://127.0.0.1:8000/accounts/user/')
-    console.log(data)
     form.value.username = data.username
     form.value.email    = data.email
     form.value.nickname = data.nickname
-    form.value.age      = data.age
+    form.value.age      = Number(data.age)
   } catch (e) {
     auth.clearAuth()
     router.push({ name: 'login' })
