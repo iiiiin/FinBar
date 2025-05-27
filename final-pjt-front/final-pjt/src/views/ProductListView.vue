@@ -71,10 +71,12 @@
       <template #item.finPrdtNm="{ item }">
         <span v-if="detailRoute(item).params.id">
           <router-link :to="detailRoute(item)">
+            
             {{ item.finPrdtNm }}
           </router-link>
         </span>
         <span v-else>
+          {{ item }}
           {{ item.finPrdtNm }}
         </span>
       </template>
@@ -91,12 +93,12 @@
 </template>
 
 <script>
-import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
 import Title from '@/components/Title.vue'
 import Pagination from '@/components/Pagination.vue'
 import PlaceFooter from '@/components/PlaceFooter.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import apiClient from '@/services/api'
 
 export default {
   name: 'ProductListView',
@@ -186,8 +188,8 @@ export default {
       this.currentPage = page
       try {
         const url = this.type === 'deposit'
-          ? 'http://127.0.0.1:8000/products/deposits/'
-          : 'http://127.0.0.1:8000/products/savings/'
+          ? '/products/deposits/'
+          : '/products/savings/'
         const params = {
           page,
           page_size: this.perPage,
@@ -198,7 +200,7 @@ export default {
             ? 'depositproductoptions__save_trm'
             : 'savingproductoptions__save_trm' ] = this.filters.term
         }
-        const res = await axios.get(url, { params })
+        const res = await apiClient.get(url, { params })
         this.rawProducts = res.data.results || []
         this.totalCount   = res.data.count || 0
       } catch (e) {

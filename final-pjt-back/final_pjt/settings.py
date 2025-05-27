@@ -30,13 +30,16 @@ environ.Env.read_env(env_file=os.path.join(BASE_DIR, ".env"))
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
-FINLIFE_API_KEY = env("FINLIFE_API_KEY")
-YOUTUBE_KEY = env("YOUTUBE_KEY")
-KAKAO_REST_API_KEY = env("KAKAO_REST_API_KEY")
-KIS_APP_KEY = env("KIS_APP_KEY")
-KIS_APP_SECRET = env("KIS_APP_SECRET")
-OPENAI_API_KEY = env("OPENAI_API_KEY")
+# 환경 변수에서 SECRET_KEY를 가져오되, 없으면 기본값 사용
+SECRET_KEY = env.str("SECRET_KEY", default='')
+
+# 다른 API 키들도 기본값 설정
+FINLIFE_API_KEY = env.str("FINLIFE_API_KEY", default='')
+YOUTUBE_KEY = env.str("YOUTUBE_KEY", default='')
+KAKAO_REST_API_KEY = env.str("KAKAO_REST_API_KEY", default='')
+KIS_APP_KEY = env.str("KIS_APP_KEY", default='')
+KIS_APP_SECRET = env.str("KIS_APP_SECRET", default='')
+OPENAI_API_KEY = env.str("OPENAI_API_KEY", default='')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -67,6 +70,7 @@ INSTALLED_APPS = [
     "maps",
     "my_products",
     "suggests",
+    "investment_profile",
     "django_filters",
     "django_celery_results",
     "django_celery_beat",
@@ -89,8 +93,8 @@ INSTALLED_APPS = [
 ]
 
 # celery 설정 (이하 3가지)
-# 메시지 브로커 (Redis) URL
-CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+# 메시지 브로커 (Redis) URL - 환경 변수가 없을 경우 기본값 사용
+CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default="redis://127.0.0.1:6379/0")
 
 # 결과 저장소: Django DB (Cloud SQL)
 CELERY_RESULT_BACKEND = "django-db"
@@ -135,6 +139,17 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:6379",  # celery 자동화
     "http://127.0.0.1:6379",  # celery 자동화
+]
+
+# CORS 추가 설정
+CORS_ALLOW_CREDENTIALS = True  # credentials 허용
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
 ]
 
 
@@ -213,10 +228,11 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-DB_PASS = env("POSTGRES_PASSWORD")
-DB_NAME = env("POSTGRES_DB")
-DB_USER = env("POSTGRES_USER")
-ASIA_HOST = env("FINAL_AISA_HOST")
+# 데이터베이스 설정 - 환경 변수가 없을 경우 기본값 사용
+DB_PASS = env.str("POSTGRES_PASSWORD", default="admin147")
+DB_NAME = env.str("POSTGRES_DB", default="final-new")
+DB_USER = env.str("POSTGRES_USER", default="user")
+ASIA_HOST = env.str("FINAL_AISA_HOST", default="34.47.93.229")
 
 
 # PostgreSQL
@@ -273,13 +289,57 @@ CELERY_BEAT_SCHEDULE = {
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+        "detailed": {
+            "format": "[{asctime}] {levelname} {module}.{funcName} - {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
         "console": {
+            "level": "DEBUG",
             "class": "logging.StreamHandler",
+            "formatter": "detailed",
+        },
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "debug.log",
+            "formatter": "detailed",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "django.request": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "suggests": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "financial_products": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
         },
     },
     "root": {
-        "handlers": ["console"],
+        "handlers": ["console", "file"],
         "level": "INFO",
     },
 }

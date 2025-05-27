@@ -50,26 +50,18 @@
     </v-row>
   </v-container>
 </template>
-
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
-import NavigationBar from '@/components/NavigationBar.vue'
-
+import axios from 'axios'
 
 const router = useRouter()
+const auth = useAuthStore()
 const username = ref('')
 const password = ref('')
-const auth = useAuthStore()
-
-const errors = reactive({
-  username: '',
-  password: '',
-  general: ''
-})
 const isSubmitting = ref(false)
+const errors = reactive({ username: '', password: '', general: '' })
 
 function validateLogin() {
   errors.username = !username.value ? 'ID를 입력해주세요' : ''
@@ -79,23 +71,28 @@ function validateLogin() {
 
 async function handleLogin() {
   if (!validateLogin()) return
-
   isSubmitting.value = true
   errors.general = ''
-
   try {
-    const res = await axios.post('http://127.0.0.1:8000/accounts/login/', {
-      username: username.value,
-      password: password.value
+    // 디버깅 로그
+    console.log('로그인 시도:', { username: username.value })
+    await auth.login({ username: username.value, password: password.value })
+    // 로그인 성공 후 상태 확인
+    console.log('로그인 성공 후 상태:', {
+      token: auth.token,
+      localStorage: localStorage.getItem('token'),
+      axiosHeader: axios.defaults.headers.common['Authorization']
     })
-    // console.log('login success:', res.data)
-    // 1) Pinia + localStorage 에 토큰 저장
-    auth.setToken(res.data.key, username.value)      // 백에서 반환하는 키 이름에 맞춰 변경
-    // 2) 로그인 후 원하는 페이지로 이동
     router.push('/')
   } catch (err) {
-    console.error(err)
-    errors.general = err.response?.data?.message || '로그인 중 오류가 발생했습니다'
+    console.error('로그인 에러:', err.response?.data || err)
+    if (err.response?.data?.non_field_errors) {
+      errors.general = err.response.data.non_field_errors[0]
+    } else if (err.response?.status === 400) {
+      errors.general = '아이디 또는 비밀번호가 올바르지 않습니다.'
+    } else {
+      errors.general = '로그인 중 오류가 발생했습니다.'
+    }
   } finally {
     isSubmitting.value = false
   }

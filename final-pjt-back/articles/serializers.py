@@ -24,6 +24,8 @@ class ArticleListSerializer(UserInfoMixin, serializers.ModelSerializer):
 
 
 class ArticleSerializer(UserInfoMixin, serializers.ModelSerializer):
+    comments = serializers.SerializerMethodField()
+
     class Meta:
         model = Article
         fields = (
@@ -35,8 +37,13 @@ class ArticleSerializer(UserInfoMixin, serializers.ModelSerializer):
             "username",
             "created_at",
             "updated_at",
+            "comments",
         )
         read_only_fields = ("id", "user", "nickname", "username")
+
+    def get_comments(self, obj):
+        comments = obj.comment_set.all().order_by("created_at")
+        return CommentListSerializer(comments, many=True).data
 
 
 class CommentListSerializer(UserInfoMixin, serializers.ModelSerializer):

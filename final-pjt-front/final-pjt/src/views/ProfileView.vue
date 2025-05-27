@@ -58,10 +58,10 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import Chart from 'chart.js/auto'
 import { useAuthStore } from '@/stores/auth'
 import NavigationBar from '@/components/NavigationBar.vue'
+import apiClient from '@/services/api'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -86,7 +86,7 @@ onMounted(async () => {
   loading.value = true
   try {
     // --- 1) 프로필 불러오기 ---
-    const { data: user } = await axios.get('http://127.0.0.1:8000/accounts/user/')
+    const { data: user } = await apiClient.get('/accounts/user/')
     form.value = {
       username: user.username,
       email:    user.email,
@@ -95,12 +95,12 @@ onMounted(async () => {
     }
 
     // --- 2) 북마크 예금/적금 불러오기 ---
-    const depRes = await axios.get(
-      'http://127.0.0.1:8000/bookmarks/deposits/',
+    const depRes = await apiClient.get(
+      '/bookmarks/deposits/',
       { headers: { Authorization: `Token ${auth.token}` } }
     )
-    const savRes = await axios.get(
-      'http://127.0.0.1:8000/bookmarks/savings/',
+    const savRes = await apiClient.get(
+      '/bookmarks/savings/',
       { headers: { Authorization: `Token ${auth.token}` } }
     )
     const deposits = Array.isArray(depRes.data)

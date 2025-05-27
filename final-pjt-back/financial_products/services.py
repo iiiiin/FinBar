@@ -12,6 +12,7 @@ from .models import (
 )
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,11 +22,14 @@ SAVING_API_URL = "http://finlife.fss.or.kr/finlifeapi/savingProductsSearch.json"
 
 
 def _fetch_page(api_url: str, top_fin_grp_no: str, page_no: int) -> dict:
-    resp = requests.get(api_url, params={
-        "auth":    settings.FINLIFE_API_KEY,
-        "topFinGrpNo": top_fin_grp_no,
-        "pageNo":  page_no,
-    })
+    resp = requests.get(
+        api_url,
+        params={
+            "auth": settings.FINLIFE_API_KEY,
+            "topFinGrpNo": top_fin_grp_no,
+            "pageNo": page_no,
+        },
+    )
     resp.raise_for_status()
     return resp.json()["result"]
 
@@ -52,7 +56,9 @@ def _collect_all(api_url: str, top_fin_grp_no: str):
     return base_list, option_list, top_fin_grp_no
 
 
-def _upsert_generic(model, unique_fields: list, update_fields: list, records: list[dict]):
+def _upsert_generic(
+    model, unique_fields: list, update_fields: list, records: list[dict]
+):
     """
     psycopg2 ON CONFLICT Upsert 공통 로직
      - 동일 unique_fields 조합의 레코드는 마지막 값으로 덮어쓰도록 중복 제거
@@ -89,34 +95,39 @@ def _upsert_generic(model, unique_fields: list, update_fields: list, records: li
 
 # ─── Deposit 전용 Upsert ───
 
+
 def upsert_deposit_products(model, data_list: list[dict], fin_no):
     base_recs = []
     for item in data_list:
         try:
-            base_recs.append({
-                "top_fin_grp_no": fin_no,
-                "fin_co_no":     item["fin_co_no"],
-                "kor_co_nm":     item["kor_co_nm"],
-                "fin_prdt_cd":   item["fin_prdt_cd"],
-                "fin_prdt_nm":   item["fin_prdt_nm"],
-                "join_way":      item["join_way"],
-                "mtrt_int":      item["mtrt_int"],
-                "spcl_cnd":      item["spcl_cnd"],
-                "join_deny":     item["join_deny"],
-                "join_member":   item["join_member"],
-                "etc_note":      item["etc_note"],
-                "max_limit":     item.get("max_limit"),
-                "dcls_strt_day": item["dcls_strt_day"],
-            })
+            base_recs.append(
+                {
+                    "top_fin_grp_no": fin_no,
+                    "fin_co_no": item["fin_co_no"],
+                    "kor_co_nm": item["kor_co_nm"],
+                    "fin_prdt_cd": item["fin_prdt_cd"],
+                    "fin_prdt_nm": item["fin_prdt_nm"],
+                    "join_way": item["join_way"],
+                    "mtrt_int": item["mtrt_int"],
+                    "spcl_cnd": item["spcl_cnd"],
+                    "join_deny": item["join_deny"],
+                    "join_member": item["join_member"],
+                    "etc_note": item["etc_note"],
+                    "max_limit": item.get("max_limit"),
+                    "dcls_strt_day": item["dcls_strt_day"],
+                    "risk_level": "low",  # 예금은 low risk로 설정
+                }
+            )
         except KeyError as e:
             logger.warning(f"[WARN] fin_prdt_cd 없음: {item.get('fin_prdt_cd')}")
 
     _upsert_generic(
         model=model,
         unique_fields=["fin_prdt_cd", "fin_co_no"],
-        update_fields=[f for f in base_recs[0]
-                       if f not in ["fin_prdt_cd", "fin_co_no"]],
-        records=base_recs
+        update_fields=[
+            f for f in base_recs[0] if f not in ["fin_prdt_cd", "fin_co_no"]
+        ],
+        records=base_recs,
     )
 
 
@@ -134,29 +145,66 @@ def upsert_deposit_options(data_list: list[dict]):
             logger.warning(f"[WARN] Unknown (fin_prdt_cd, fin_co_no): {key}")
             continue
 
-        opt_recs.append({
-            "deposit_product_id": product_id,
-            "fin_co_no":          opt["fin_co_no"],  # 추가된 필드
-            "intr_rate_type_nm":  opt["intr_rate_type_nm"],
-            "save_trm":           opt["save_trm"],
-            "intr_rate":          opt["intr_rate"],
-            "intr_rate2":         opt["intr_rate2"],
-        })
+        opt_recs.append(
+            {
+                "deposit_product_id": product_id,
+                "fin_co_no": opt["fin_co_no"],  # 추가된 필드
+                "intr_rate_type_nm": opt["intr_rate_type_nm"],
+                "save_trm": opt["save_trm"],
+                "intr_rate": opt["intr_rate"],
+                "intr_rate2": opt["intr_rate2"],
+            }
+        )
 
     _upsert_generic(
         model=DepositProductOptions,
-        unique_fields=["fin_co_no", "deposit_product_id",
-                       "intr_rate_type_nm", "save_trm"],
+        unique_fields=[
+            "fin_co_no",
+            "deposit_product_id",
+            "intr_rate_type_nm",
+            "save_trm",
+        ],
         update_fields=["intr_rate", "intr_rate2"],
-        records=opt_recs
+        records=opt_recs,
     )
+
 
 # ─── Saving 전용 Upsert ───
 
 
 def upsert_saving_products(model, data_list: list[dict], fin_no):
-    # DepositProduct와 필드 구조 동일 → 같은 함수 재사용
-    upsert_deposit_products(model, data_list, fin_no)
+    base_recs = []
+    for item in data_list:
+        try:
+            base_recs.append(
+                {
+                    "top_fin_grp_no": fin_no,
+                    "fin_co_no": item["fin_co_no"],
+                    "kor_co_nm": item["kor_co_nm"],
+                    "fin_prdt_cd": item["fin_prdt_cd"],
+                    "fin_prdt_nm": item["fin_prdt_nm"],
+                    "join_way": item["join_way"],
+                    "mtrt_int": item["mtrt_int"],
+                    "spcl_cnd": item["spcl_cnd"],
+                    "join_deny": item["join_deny"],
+                    "join_member": item["join_member"],
+                    "etc_note": item["etc_note"],
+                    "max_limit": item.get("max_limit"),
+                    "dcls_strt_day": item["dcls_strt_day"],
+                    "risk_level": "medium",  # 적금은 medium risk로 설정
+                }
+            )
+        except KeyError as e:
+            logger.warning(f"[WARN] fin_prdt_cd 없음: {item.get('fin_prdt_cd')}")
+
+    _upsert_generic(
+        model=model,
+        unique_fields=["fin_prdt_cd", "fin_co_no"],
+        update_fields=[
+            f for f in base_recs[0] if f not in ["fin_prdt_cd", "fin_co_no"]
+        ],
+        records=base_recs,
+    )
 
 
 def upsert_saving_options(data_list: list[dict]):
@@ -173,23 +221,31 @@ def upsert_saving_options(data_list: list[dict]):
             logger.warning(f"[WARN] Unknown (fin_prdt_cd, fin_co_no): {key}")
             continue
 
-        opt_recs.append({
-            "saving_product_id":  product_id,
-            "fin_co_no":          opt["fin_co_no"],  # 추가된 필드
-            "intr_rate_type_nm":  opt["intr_rate_type_nm"],
-            "rsrv_type_nm":       opt["rsrv_type_nm"],
-            "save_trm":           opt["save_trm"],
-            "intr_rate":          opt["intr_rate"],
-            "intr_rate2":         opt["intr_rate2"],
-        })
+        opt_recs.append(
+            {
+                "saving_product_id": product_id,
+                "fin_co_no": opt["fin_co_no"],  # 추가된 필드
+                "intr_rate_type_nm": opt["intr_rate_type_nm"],
+                "rsrv_type_nm": opt["rsrv_type_nm"],
+                "save_trm": opt["save_trm"],
+                "intr_rate": opt["intr_rate"],
+                "intr_rate2": opt["intr_rate2"],
+            }
+        )
 
     _upsert_generic(
         model=SavingProductOptions,
-        unique_fields=["fin_co_no", "saving_product_id",
-                       "intr_rate_type_nm", "save_trm", "rsrv_type_nm"],
+        unique_fields=[
+            "fin_co_no",
+            "saving_product_id",
+            "intr_rate_type_nm",
+            "save_trm",
+            "rsrv_type_nm",
+        ],
         update_fields=["intr_rate", "intr_rate2"],
-        records=opt_recs
+        records=opt_recs,
     )
+
 
 # ─── 전체 수집 & Upsert 트리거 ───
 
