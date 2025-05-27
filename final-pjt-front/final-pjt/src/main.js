@@ -19,6 +19,10 @@ app.use(router)
 app.use(vuetify)
 app.component('Lottie', Vue3Lottie)
 
+
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL
+app.config.globalProperties.$axios = axios
+
 import { useAuthStore } from '@/stores/auth'
 const authStore = useAuthStore()
 if (authStore.token) {

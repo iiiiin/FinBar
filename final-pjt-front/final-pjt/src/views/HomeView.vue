@@ -8,7 +8,7 @@
       <!-- 왼쪽 6칸: 사진 3장이 연속적으로 반복될 애니메이션 공간 -->
       <v-col cols="6" class="d-flex align-center justify-center">
         <v-img
-          :src="images[0]"
+          :src="images[1]"
           contain
           max-width="80%"
           max-height="80%"
@@ -46,7 +46,7 @@ import { RouterLink } from 'vue-router'
 // 반복될 이미지 URL 배열
 const images = ref([
   '/images/cup.png',
-  '/images/home2.png',
+  '/images/welcome.png',
   '/images/home3.png',
 ])
 </script>

@@ -46,6 +46,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore }  from '@/stores/auth'
+import apiClient from '@/services/api'
 import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
 import SearchBar     from '@/components/SearchBar.vue'
@@ -65,7 +66,7 @@ const isAuth     = computed(() => auth.isLoggedIn)
 // 게시글 목록 조회
 async function fetchArticles() {
   try {
-    const { data } = await axios.get('http://127.0.0.1:8000/articles/', {
+    const { data } = await apiClient.get('/articles/', {
     })
     articles.value = data
   } catch (error) {

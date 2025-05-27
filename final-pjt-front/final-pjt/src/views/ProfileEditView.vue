@@ -91,9 +91,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import NavigationBar from '@/components/NavigationBar.vue'
+import apiClient from '@/services/api'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -122,7 +122,7 @@ const ageOptions = Array.from({ length: 10 }, (_, i) => (i + 1) * 10)
 onMounted(async () => {
   loading.value = true
   try {
-    const { data } = await axios.get('http://127.0.0.1:8000/accounts/user/')
+    const { data } = await apiClient.get('/accounts/user/')
     form.value.username = data.username
     form.value.email    = data.email
     form.value.nickname = data.nickname
@@ -141,7 +141,7 @@ async function handleUpdate() {
   loading.value = true
   error.value   = ''
   try {
-    const { data } = await axios.patch('http://127.0.0.1:8000/accounts/user/', {
+    const { data } = await apiClient.patch('/accounts/user/', {
       email:    form.value.email,
       nickname: form.value.nickname,
       age:      form.value.age,
@@ -161,7 +161,7 @@ async function PasswordUpdate() {
   loading.value = true
   error.value   = ''
   try {
-    await axios.post('http://127.0.0.1:8000/accounts/password/change/', {
+    await apiClient.post('/accounts/password/change/', {
       new_password1: passwordNew.value,
       new_password2: passwordConfirm.value,
     })

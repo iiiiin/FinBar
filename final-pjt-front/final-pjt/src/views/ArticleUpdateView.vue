@@ -32,7 +32,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import axios from 'axios'
+import apiClient from '@/services/api'
 import NavigationBar from '@/components/NavigationBar.vue'
 import Title from '@/components/Title.vue'
 import TitleInput from '@/components/TitleInput.vue'
@@ -46,7 +46,7 @@ const form = ref({ title: '', content: '' })
 onMounted(async () => {
   const id = route.params.id
   try {
-    const { data } = await axios.get(`http://127.0.0.1:8000/articles/${id}/`)
+    const { data } = await apiClient.get(`/articles/${id}/`)
     form.value.title   = data.title
     form.value.content = data.content  // Markdown or HTML
   } catch (e) {
@@ -58,7 +58,7 @@ onMounted(async () => {
 async function onUpdate() {
   const id = route.params.id
   try {
-    await axios.put(`http://127.0.0.1:8000/articles/${id}/`, {
+    await apiClient.put(`/articles/${id}/`, {
       title:   form.value.title,
       content: form.value.content
     })
@@ -76,7 +76,7 @@ function goBack() {
 
 <style scoped>
 /* Vuetify v-btn 기본 스타일 오버라이드 */
-::v-deep .v-btn {
+::deep .v-btn {
   background-color: #ffffff !important;       /* 흰 배경 */
   color: #000000 !important;                  /* 검은 글씨 */
   box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important; /* 연한 회색 그림자 */
@@ -84,12 +84,12 @@ function goBack() {
 }
 
 /* Hover 시 그림자만 살짝 강조 */
-::v-deep .v-btn:hover {
+::deep .v-btn:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
 }
 
 /* 선택된(primary) 혹은 text prop 은 그대로 두고, 색만 바뀌게 */
-::v-deep .v-btn--text {
+::deep .v-btn--text {
   background-color: transparent !important;
   box-shadow: none !important;
   color: #000000 !important;

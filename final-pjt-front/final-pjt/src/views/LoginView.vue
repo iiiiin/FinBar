@@ -54,9 +54,9 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import NavigationBar from '@/components/NavigationBar.vue'
+import apiClient from '@/services/api'
 
 
 const router = useRouter()
@@ -84,7 +84,7 @@ async function handleLogin() {
   errors.general = ''
 
   try {
-    const res = await axios.post('http://127.0.0.1:8000/accounts/login/', {
+    const res = await apiClient.post('/accounts/login/', {
       username: username.value,
       password: password.value
     })

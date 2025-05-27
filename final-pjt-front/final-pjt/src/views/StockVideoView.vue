@@ -57,12 +57,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
 import SearchBar     from '@/components/SearchBar.vue'
 import Title         from '@/components/Title.vue'
 import PlaceFooter from '@/components/PlaceFooter.vue'
 import { useVideoStore } from '@/stores/videoStore'
+import apiClient from '@/services/api'
 
 const pageTitle = '관심 종목 정보 검색'
 const q         = ref('')
@@ -83,7 +83,7 @@ async function fetchArticles() {
   isLoading.value = true
   try {
     const token = localStorage.getItem('token')
-    const { data } = await axios.get('http://localhost:8000/youtube/', {
+    const { data } = await apiClient.get('/youtube/', {
       params: { q: q.value },
       headers: { Authorization: `Token ${token}` }
     })
