@@ -13,7 +13,7 @@
                         </div>
                         <v-progress-linear
                             :model-value="progressPercentage"
-                            color="primary"
+                            color="grey darken-3"
                             height="8"
                             rounded
                         />
@@ -42,7 +42,11 @@
                         <v-card elevation="3" class="rounded-lg">
                             <!-- 로딩 상태 -->
                             <v-card-text v-if="loading" class="text-center py-8">
-                                <v-progress-circular indeterminate color="primary" size="64" />
+                                <LoadingSpinner
+                                    v-if="loading"
+                                    :images="loadingImages"
+                                    :interval="100"
+                                    />
                                 <p class="mt-4 text-subtitle-1">설문 문항을 불러오는 중...</p>
                             </v-card-text>
 
@@ -54,7 +58,7 @@
                                 </v-alert>
                                 <div class="text-center mt-4">
                                     <v-btn 
-                                        color="primary" 
+                                        color="grey darken-3" 
                                         variant="outlined"
                                         @click="retryFetch"
                                     >
@@ -65,7 +69,7 @@
 
                             <!-- 현재 설문 문항 -->
                             <template v-else-if="!loading && !error && questions.length > 0">
-                                <v-card-title class="text-h5 py-4 px-6 bg-primary text-white">
+                                <v-card-title class="text-h5 py-4 px-6 bg-grey darken-3 text-white">
                                     <v-icon class="mr-3">mdi-clipboard-check</v-icon>
                                     투자 성향 설문조사
                                 </v-card-title>
@@ -94,7 +98,7 @@
                                         
                                         <v-btn
                                             v-if="currentQuestionIndex < questions.length - 1"
-                                            color="primary"
+                                            color="grey darken-3"
                                             variant="elevated"
                                             @click="nextQuestion"
                                             :disabled="!answers[currentQuestion?.id]"
@@ -133,21 +137,21 @@
                                 <v-list density="compact">
                                     <v-list-item>
                                         <template v-slot:prepend>
-                                            <v-icon size="small" color="primary">mdi-check</v-icon>
+                                            <v-icon size="small" color="grey darken-3">mdi-check</v-icon>
                                         </template>
                                         <v-list-item-title>솔직하게 답변해주세요</v-list-item-title>
                                         <v-list-item-subtitle>정확한 투자 성향 분석을 위해 본인의 생각을 그대로 표현해주세요</v-list-item-subtitle>
                                     </v-list-item>
                                     <v-list-item>
                                         <template v-slot:prepend>
-                                            <v-icon size="small" color="primary">mdi-check</v-icon>
+                                            <v-icon size="small" color="grey darken-3">mdi-check</v-icon>
                                         </template>
                                         <v-list-item-title>모든 문항에 답변해주세요</v-list-item-title>
                                         <v-list-item-subtitle>정확한 분석을 위해 모든 문항에 답변이 필요합니다</v-list-item-subtitle>
                                     </v-list-item>
                                     <v-list-item>
                                         <template v-slot:prepend>
-                                            <v-icon size="small" color="primary">mdi-check</v-icon>
+                                            <v-icon size="small" color="grey darken-3">mdi-check</v-icon>
                                         </template>
                                         <v-list-item-title>약 5분 정도 소요됩니다</v-list-item-title>
                                         <v-list-item-subtitle>차분히 생각하며 답변해주세요</v-list-item-subtitle>
@@ -183,7 +187,7 @@
                 
                 <v-card-actions class="justify-center pa-4">
                     <v-btn 
-                        color="primary" 
+                        color="grey darken-3" 
                         variant="elevated"
                         @click="goToProfile"
                     >
@@ -203,9 +207,11 @@ import SurveyQuestionItem from '@/components/SurveyQuestionItem.vue';
 import NavigationBar from '@/components/NavigationBar.vue';
 import { surveyAPI } from '@/services/api';
 import { investmentAPI } from '@/services/api';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const router = useRouter();
 const store = useSurveyStore();
+const loadingImages = ['images/shaker1.png','images/shaker2.png']
 
 // store에서 상태 가져오기
 const questions = computed(() => {
@@ -395,7 +401,7 @@ onMounted(async () => {
     font-weight: 500;
 }
 
-.bg-primary {
+.bg-grey darken-3 {
     background-color: #1976D2 !important;
 }
 

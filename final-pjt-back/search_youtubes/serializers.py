@@ -12,3 +12,9 @@ class MarkVideoSerializers(serializers.ModelSerializer):
             "user_id",
         )
 
+# ──────────────────────────────────────────────────────────
+# 동영상 디테일용 Serializer
+class YouTubeDetailSerializer(serializers.Serializer):
+    id          = serializers.CharField()
+    title       = serializers.CharField()
+    description = serializers.CharField()

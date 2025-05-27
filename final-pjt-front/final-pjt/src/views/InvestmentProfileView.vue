@@ -19,11 +19,10 @@
 
         <!-- 로딩 상태 -->
         <div v-if="loading" class="loading-container">
-          <v-progress-circular
-            indeterminate
-            color="primary"
-            size="64"
-            class="mb-4"
+          <LoadingSpinner
+            v-if="loading"
+            :images="loadingImages"
+            :interval="100"
           />
           <span class="text-h6">프로필 정보를 불러오는 중...</span>
         </div>
@@ -121,7 +120,7 @@
                   </v-carousel>
                   <v-btn
                     block
-                    color="primary"
+                    color="grey darken-3"
                     variant="elevated"
                     class="mt-4 action-button"
                     @click="goToSurvey"
@@ -171,7 +170,7 @@
                       <v-list class="asset-list">
                         <v-list-item class="asset-item">
                           <template v-slot:prepend>
-                            <v-icon icon="mdi-wallet" color="primary" size="large" />
+                            <v-icon icon="mdi-wallet" color="grey darken-3" size="large" />
                           </template>
                           <v-list-item-title class="text-subtitle-1 font-weight-bold">
                             현재 자산
@@ -183,7 +182,7 @@
 
                         <v-list-item class="asset-item">
                           <template v-slot:prepend>
-                            <v-icon icon="mdi-target" color="primary" size="large" />
+                            <v-icon icon="mdi-target" color="grey darken-3" size="large" />
                           </template>
                           <v-list-item-title class="text-subtitle-1 font-weight-bold">
                             목표 자산
@@ -195,7 +194,7 @@
 
                         <v-list-item class="asset-item">
                           <template v-slot:prepend>
-                            <v-icon icon="mdi-chart-timeline-variant" color="primary" size="large" />
+                            <v-icon icon="mdi-chart-timeline-variant" color="grey darken-3" size="large" />
                           </template>
                           <v-list-item-title class="text-subtitle-1 font-weight-bold">
                             달성률
@@ -209,7 +208,7 @@
                   </div>
                   <v-btn
                     block
-                    color="primary"
+                    color="grey darken-3"
                     variant="elevated"
                     class="mt-auto action-button"
                     @click="goToGoal"
@@ -226,7 +225,7 @@
           <!-- 추천 버튼 -->
           <div class="text-center mt-8">
             <v-btn
-              color="primary"
+              color="grey darken-3"
               size="x-large"
               variant="elevated"
               @click="goToRecommendations"
@@ -248,6 +247,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import NavigationBar from '@/components/NavigationBar.vue'
 import { investmentAPI } from '@/services/api'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const router = useRouter()
 const profile = ref(null)
@@ -255,6 +255,7 @@ const goal = ref(null)
 const goalProgress = ref(null)
 const error = ref(null)
 const loading = ref(true)
+const loadingImages = ['images/shaker1.png','images/shaker2.png']
 
 async function fetchStatus() {
   try {
@@ -303,7 +304,7 @@ function formatCurrency(value) {
 // 진행률에 따른 색상 반환 함수
 function getProgressColor(percentage) {
   if (percentage >= 80) return 'success'
-  if (percentage >= 50) return 'primary'
+  if (percentage >= 50) return 'grey darken-3'
   if (percentage >= 30) return 'warning'
   return 'error'
 }

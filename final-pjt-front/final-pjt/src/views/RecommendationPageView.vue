@@ -15,7 +15,11 @@
                 <!-- 로딩 상태 -->
                 <v-card v-if="loading" elevation="3" class="rounded-lg">
                     <v-card-text class="text-center py-8">
-                        <v-progress-circular indeterminate color="primary" size="64" />
+                        <LoadingSpinner
+                            v-if="loading"
+                            :images="loadingImages"
+                            :interval="100"
+                            />
                         <p class="mt-4 text-subtitle-1">추천 상품을 불러오는 중...</p>
                     </v-card-text>
                 </v-card>
@@ -28,7 +32,7 @@
                             {{ error }}
                         </v-alert>
                         <div class="text-center mt-4">
-                            <v-btn color="primary" @click="refreshRecommendations">
+                            <v-btn color="grey darken-3" @click="refreshRecommendations">
                                 다시 시도
                             </v-btn>
                         </div>
@@ -39,7 +43,7 @@
                 <template v-else>
                     <!-- 추천 요약 -->
                     <v-card elevation="3" class="mb-6 rounded-lg">
-                        <v-card-title class="text-h5 py-4 px-6 bg-primary text-white">
+                        <v-card-title class="text-h5 py-4 px-6 bg-grey darken-3 text-white">
                             <v-icon class="mr-3">mdi-chart-line</v-icon>
                             투자 프로필 요약
                         </v-card-title>
@@ -49,7 +53,7 @@
                                     <div class="text-center">
                                         <h3 class="text-h6 mb-2">투자 성향</h3>
                                         <v-chip
-                                            color="primary"
+                                            color="grey darken-3"
                                             size="large"
                                             class="mb-2"
                                         >
@@ -101,7 +105,7 @@
                                     <p class="text-body-1 mb-4">{{ error }}</p>
                                     <div class="d-flex justify-end gap-2">
                                         <v-btn
-                                            color="primary"
+                                            color="grey darken-3"
                                             variant="text"
                                             @click="refreshRecommendations"
                                             class="action-button"
@@ -110,7 +114,7 @@
                                             다시 시도
                                         </v-btn>
                                         <v-btn
-                                            color="primary"
+                                            color="grey darken-3"
                                             variant="elevated"
                                             @click="router.push('/investment-profile')"
                                             class="action-button"
@@ -126,7 +130,7 @@
 
                     <!-- 추천 상품 목록 -->
                     <v-card v-if="!error && store.items.length > 0" elevation="3" class="rounded-lg">
-                        <v-card-title class="text-h5 py-4 px-6 bg-primary text-white">
+                        <v-card-title class="text-h5 py-4 px-6 bg-grey darken-3 text-white">
                             <v-icon class="mr-3">mdi-star</v-icon>
                             추천 상품 목록
                         </v-card-title>
@@ -166,10 +170,12 @@ import { useRecommendationStore } from '@/stores/recommendationStore';
 import NavigationBar from '@/components/NavigationBar.vue';
 import RecommendationItem from '@/components/RecommendationItem.vue';
 import { recommendationAPI, investmentAPI } from '@/services/api';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const router = useRouter();
 const auth = useAuthStore();
 const store = useRecommendationStore();
+const loadingImages = ['images/shaker1.png','images/shaker2.png']
 
 // store에서 items를 computed로 가져오기
 const recommendations = computed(() => store.items || []);
@@ -307,7 +313,7 @@ onBeforeUnmount(() => {
     font-weight: 500;
 }
 
-.bg-primary {
+.bg-grey darken-3 {
     background-color: #1976D2 !important;
 }
 

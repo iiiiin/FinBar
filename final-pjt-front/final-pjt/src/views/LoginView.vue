@@ -54,6 +54,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import NavigationBar from '@/components/NavigationBar.vue'
 import axios from 'axios'
 
 const router = useRouter()

@@ -10,4 +10,6 @@ urlpatterns = [
     path("marked/", views.marked_video),
     # 단일 영상 확인용
     path("show_video/", views.show_video),
+    # 4) 동영상 디테일 → GET  /api/youtube/{videoId}/
+    path("<str:id>/", views.show_video),
 ]

@@ -36,6 +36,58 @@
       </v-col>
     </v-row>
 
+    <v-row align="center" justify="center" class="mt-6">
+      <v-col cols="12" sm="8" md="6">
+        <!-- 북마크 예금 리스트 -->
+        <v-card elevation="2" class="pa-4 mb-4">
+          <div class="text-h6 mb-2">가입 예금</div>
+          <v-list dense>
+            <v-list-item 
+              v-for="bm in depositList" 
+              :key="bm.id"
+            >
+    
+                <v-list-item-title>
+                  {{ bm.deposit_product.fin_prdt_nm }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  현재 금리: {{ (bm.deposit_product.options[0]?.intr_rate ?? 0) }}%
+                </v-list-item-subtitle>
+            </v-list-item>
+            <v-list-item v-if="!depositList.length">
+             등록된 예금 북마크가 없습니다.
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-col>
+    </v-row>
+
+      <v-row align="center" justify="center" class="mt-6">
+        <v-col cols="12" sm="8" md="6">
+        <!-- 북마크 적금 리스트 -->
+        <v-card elevation="2" class="pa-4 mb-4">
+          <div class="text-h6 mb-2">가입 적금</div>
+          <v-list dense>
+            <v-list-item 
+              v-for="bm in savingList" 
+              :key="bm.id"
+            >
+       
+                <v-list-item-title>
+                  {{ bm.saving_product.fin_prdt_nm }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  현재 금리: {{ (bm.saving_product.options[0]?.intr_rate ?? 0) }}%
+                </v-list-item-subtitle>
+           
+            </v-list-item>
+            <v-list-item v-if="!savingList.length">
+             등록된 적금 북마크가 없습니다.
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-col>
+    </v-row>
     <!-- 북마크 차트 -->
     <v-row align="center" justify="center" class="mt-6">
      <v-col cols="12" sm="8" md="6">
@@ -74,6 +126,10 @@ const loading = ref(false)
 const depositChart = ref(null)
 const savingChart  = ref(null)
 
+// 북마크 리스트 refs
+const depositList = ref([])
+const savingList  = ref([])
+
 // 차트 인스턴스
 let depositChartInstance = null
 let savingChartInstance  = null
@@ -110,13 +166,16 @@ onMounted(async () => {
       ? savRes.data
       : savRes.data.results || []
 
+     // 리스트 ref 에도 할당
+    depositList.value = deposits
+    savingList.value  = savings
+    
     // --- 3) 차트용 데이터 가공 ---
     const depLabels = [], depR1 = [], depR2 = []
     deposits.forEach(bm => {
       const p = bm.deposit_product
       depLabels.push(p.fin_prdt_nm)
       if (p.options.length) {
-        console.log(p.options)
        const best = p.options.reduce((a, b) =>
          (a.intr_rate2 ?? 0) > (b.intr_rate2 ?? 0) ? a : b
        )
