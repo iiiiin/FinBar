@@ -6,11 +6,13 @@ import BankMapView from '@/views/BankMapView.vue'
 import DepositDetailView from '@/views/DepositDetailView.vue'
 import ErrorView from '@/views/ErrorView.vue'
 import MenuView from '@/views/MenuView.vue'
+import MenuView from '@/views/MenuView.vue'
 import LoginView from '@/views/LoginView.vue'
 import ProfileEditView from '@/views/ProfileEditView.vue'
 import SignupView from '@/views/SignupView.vue'
 import SpotPriceView from '@/views/SpotPriceView.vue'
 import StockVideoView from '@/views/StockVideoView.vue'
+import VideoDetailView from '@/views/VideoDetailView.vue'
 import VideoDetailView from '@/views/VideoDetailView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import ProductListView from '@/views/ProductListView.vue'
@@ -22,6 +24,8 @@ import InvestmentGoalView from '@/views/InvestmentGoalView.vue'
 import { investmentAPI } from '@/services/api'
 import HomeView from '@/views/HomeView.vue'
 import ProfileView from '@/views/ProfileView.vue'
+import HomeView from '@/views/HomeView.vue'
+import ProfileView from '@/views/ProfileView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,6 +34,12 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+    },
+    // 랜딩 페이지
+    {
+      path: '/menu',
+      name: 'menu',
+      component: MenuView,
     },
     // 랜딩 페이지
     {
@@ -53,6 +63,12 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
+      component: ProfileView,
+    },
+    // 회원정보 수정 페이지
+    {
+      path: '/profileedit',
+      name: 'profileEdit',
       component: ProfileView,
     },
     // 회원정보 수정 페이지

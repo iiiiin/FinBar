@@ -101,7 +101,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import axios from 'axios'
+import apiClient from '@/services/api'
 import NavigationBar from '@/components/NavigationBar.vue'
 import Title from '@/components/Title.vue'
 import { useAuthStore } from '@/stores/auth'
@@ -127,10 +127,21 @@ function formatDate(dateStr) {
   return dateStr ? new Date(dateStr).toLocaleString() : ''
 }
 
+// 댓글 목록 로드
+async function loadComments() {
+  try {
+    const { data: cmts } = await apiClient.get(`/articles/${route.params.id}/comment/`)
+    comments.value = cmts
+  } catch (e) {
+    if (e.response?.status === 404) comments.value = []
+    else console.error(e)
+  }
+}
+
 // 게시글 로드 및 댓글 로드
 async function loadData() {
   try {
-    const { data: art } = await axios.get(`http://127.0.0.1:8000/articles/${route.params.id}/`)
+    const { data: art } = await apiClient.get(`/articles/${route.params.id}/`)
     article.value = art
     comments.value = art.comments || []
   } catch (e) {
@@ -149,7 +160,7 @@ async function addComment() {
   }
   if (!newComment.value.trim()) return
   try {
-    await axios.post(`http://127.0.0.1:8000/articles/${route.params.id}/comment/`, { content: newComment.value })
+    await apiClient.post(`/articles/${route.params.id}/comment/`, { content: newComment.value })
     newComment.value = ''
     await loadData()
   } catch (e) {
@@ -166,8 +177,8 @@ async function deleteComment(id) {
     return
   }
   try {
-    await axios.delete(`http://127.0.0.1:8000/articles/${route.params.id}/comment/${id}/`)
-    await loadData()
+    await apiClient.delete(`/articles/${route.params.id}/comment/${id}/`)
+    await loadComments()
   } catch (e) {
     console.error(e)
     alert('댓글 삭제에 실패했습니다.')
@@ -200,8 +211,8 @@ async function saveEdit(id) {
   }
   if (!editContent.value.trim()) return
   try {
-    await axios.put(
-      `http://127.0.0.1:8000/articles/${route.params.id}/comment/${id}/`,
+    await apiClient.put(
+      `/articles/${route.params.id}/comment/${id}/`,
       { article_pk: route.params.id,
         comment_pk: id,
         content: editContent.value }
@@ -230,7 +241,7 @@ async function deleteArticle() {
   if (!isOwner.value) return
   if (!confirm('정말 삭제하시겠습니까?')) return
   try {
-    await axios.delete(`http://127.0.0.1:8000/articles/${route.params.id}/`)
+    await apiClient.delete(`/articles/${route.params.id}/`)
     router.push({ name: 'articles' })
   } catch (e) {
     console.error(e)

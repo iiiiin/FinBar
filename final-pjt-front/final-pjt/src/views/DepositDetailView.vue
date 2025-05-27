@@ -7,14 +7,13 @@
         <Title :title="product.fin_prdt_nm || '상세 정보'" />
       </v-col>
       <v-col cols="2" class="text-right">
-        <!-- 북마크 상태에 따라 텍스트 토글 -->
       <BookmarkToggle
-      v-if="product.deposit_product_id != null"
+      v-if="isAuth && product.deposit_product_id != null"
       :initialToggled="isBookmarked"
       :bookmarkId="bookmarkId"
       :resource-id="product.deposit_product_id"
       :apiClient="apiClient"
-      baseUrl="http://127.0.0.1:8000/bookmarks/deposits"
+      baseUrl="/bookmarks/deposits"
       @update:toggled="isBookmarked = $event"
       @update:bookmarkId="bookmarkId = $event"
       @snackbar="showSnackbar($event.text, $event.color)"
@@ -64,7 +63,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import apiClient from '@/services/api'
 import NavigationBar from '@/components/NavigationBar.vue'
 import Title from '@/components/Title.vue'
 import BookmarkToggle from '@/components/BookmarkToggle.vue'
@@ -87,25 +86,29 @@ export default {
         color: 'grey lighten-2',
         timeout: 3000,
       },
-      apiClient: axios,
+      apiClient: apiClient,
     }
   },
   computed: {
     optionHeaders() {
       return [
-        { text: '금리 유형', value: 'intr_rate_type_nm' },
-        { text: '저축 기간', value: 'save_trm' },
-        { text: '금리1', value: 'intr_rate' },
-        { text: '금리2', value: 'intr_rate2' },
+        { title: '금리 유형', key: 'intr_rate_type_nm' },
+        { title: '저축 기간', key: 'save_trm' },
+        { title: '저축 금리', key: 'intr_rate' },
+        { title: '최고 우대 금리', key: 'intr_rate2' },
       ]
     },
+    isAuth() {
+     const authStore = useAuthStore()
+     return !!authStore.isLoggedIn
+   }
   },
   async mounted() {
     this.loading = true
     const productId = Number(this.$route.params.id)
     try {
-      const res = await axios.get(
-        `http://127.0.0.1:8000/products/deposits/${productId}/`
+      const res = await this.apiClient.get(
+        `/products/deposits/${productId}/`
       )
       this.product = res.data
       await this.fetchBookmarkStatus(productId)
@@ -127,8 +130,8 @@ export default {
         const authStore = useAuthStore()
         const token = authStore.token
         if (!token) return
-        const res = await axios.get(
-          'http://127.0.0.1:8000/bookmarks/deposits/',
+        const res = await this.apiClient.get(
+          '/bookmarks/deposits/',
           { headers: { Authorization: `Token ${token}` } }
         )
         // 페이징 객체인 경우 results 사용, 배열이면 그대로
@@ -162,16 +165,16 @@ export default {
       const productId = Number(this.$route.params.id)
       try {
         if (this.isBookmarked) {
-          await axios.delete(
-            `http://127.0.0.1:8000/bookmarks/deposits/${this.bookmarkId}/`,
+          await this.apiClient.delete(
+            `/bookmarks/deposits/${this.bookmarkId}/`,
             { headers: { Authorization: `Token ${token}` } }
           )
           this.isBookmarked = false
           this.bookmarkId = null
           this.showSnackbar('가입이 취소되었습니다.', 'grey lighten-2')
         } else {
-          const res = await axios.post(
-            'http://127.0.0.1:8000/bookmarks/deposits/',
+          const res = await this.apiClient.post(
+            '/bookmarks/deposits/',
             { deposit_product_id: productId },
             { headers: { Authorization: `Token ${token}` } }
           )

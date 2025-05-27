@@ -57,12 +57,12 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import NavigationBar from '@/components/NavigationBar.vue'
 import Title from '@/components/Title.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import PlaceFooter from '@/components/PlaceFooter.vue'
 import { useVideoStore } from '@/stores/videoStore'
+import apiClient from '@/services/api'
 
 const router = useRouter()
 const pageTitle = '관심 종목 정보 검색'
@@ -93,11 +93,7 @@ async function fetchArticles() {
   
   try {
     const token = localStorage.getItem('token')
-    if (!token) {
-      throw new Error('인증 토큰이 없습니다.')
-    }
-
-    const { data } = await axios.get('http://localhost:8000/youtube/', {
+    const { data } = await apiClient.get('/youtube/', {
       params: { q: q.value },
       headers: { Authorization: `Token ${token}` }
     })
