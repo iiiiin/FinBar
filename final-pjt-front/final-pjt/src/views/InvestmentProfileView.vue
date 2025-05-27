@@ -19,34 +19,19 @@
 
         <!-- 로딩 상태 -->
         <div v-if="loading" class="loading-container">
-          <LoadingSpinner
-            v-if="loading"
-            :images="loadingImages"
-            :interval="100"
-          />
+          <LoadingSpinner v-if="loading" :images="loadingImages" :interval="100" />
           <span class="text-h6">프로필 정보를 불러오는 중...</span>
         </div>
 
         <!-- 에러 상태 -->
-        <v-alert
-          v-else-if="error"
-          type="error"
-          variant="tonal"
-          class="mb-6 error-alert"
-          elevation="2"
-        >
+        <v-alert v-else-if="error" type="error" variant="tonal" class="mb-6 error-alert" elevation="2">
           <template v-slot:prepend>
             <v-icon icon="mdi-alert-circle" size="large" />
           </template>
           <div class="d-flex align-center">
             <span class="text-body-1">{{ error }}</span>
             <v-spacer />
-            <v-btn
-              color="error"
-              variant="text"
-              @click="fetchStatus"
-              class="ml-4"
-            >
+            <v-btn color="error" variant="text" @click="fetchStatus" class="ml-4">
               다시 시도
             </v-btn>
           </div>
@@ -58,13 +43,8 @@
             <!-- 투자 성향 분석 카드 -->
             <v-col cols="12" md="6" class="mb-4">
               <v-card elevation="2" class="h-100 profile-card" :class="{ 'card-hover': true }">
-                <v-img
-                  src="@/assets/images/investment-analysis.jpg"
-                  height="200"
-                  cover
-                  class="align-end card-image"
-                  gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.8)"
-                >
+                <v-img src="/images/invest.png" height="300" cover class="align-end card-image"
+                  gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.6)">
                   <v-card-title class="text-white text-shadow">
                     투자 성향 분석
                   </v-card-title>
@@ -118,15 +98,8 @@
                       </div>
                     </v-carousel-item>
                   </v-carousel>
-                  <v-btn
-                    block
-                    color="grey darken-3"
-                    variant="elevated"
-                    class="mt-4 action-button"
-                    @click="goToSurvey"
-                    elevation="2"
-                    size="small"
-                  >
+                  <v-btn color="grey darken-3" variant="elevated" class="mt-4 action-button" @click="goToSurvey"
+                    elevation="2" size="small">
                     <v-icon icon="mdi-chart-line" class="mr-2" />
                     투자 성향 분석하기
                   </v-btn>
@@ -137,13 +110,8 @@
             <!-- 자산 목표 설정 카드 -->
             <v-col cols="12" md="6" class="mb-4">
               <v-card elevation="2" class="h-100 profile-card" :class="{ 'card-hover': true }">
-                <v-img
-                  src="@/assets/images/investment-goal.jpg"
-                  height="200"
-                  cover
-                  class="align-end card-image"
-                  gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.8)"
-                >
+                <v-img src="/images/plan.png" height="300" cover class="align-end card-image"
+                  gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.6)">
                   <v-card-title class="text-white text-shadow">
                     자산 목표 설정
                   </v-card-title>
@@ -153,13 +121,9 @@
                     <div v-if="goalProgress" class="goal-progress">
                       <!-- 진행률 게이지 -->
                       <div class="d-flex justify-center mb-6">
-                        <v-progress-circular
-                          :model-value="goalProgress.progress_percentage"
-                          :color="getProgressColor(goalProgress.progress_percentage)"
-                          size="120"
-                          width="12"
-                          class="progress-gauge"
-                        >
+                        <v-progress-circular :model-value="goalProgress.progress_percentage"
+                          :color="getProgressColor(goalProgress.progress_percentage)" size="120" width="12"
+                          class="progress-gauge">
                           <span class="text-h5 font-weight-bold">
                             {{ goalProgress.progress_percentage }}%
                           </span>
@@ -206,14 +170,8 @@
                       </v-list>
                     </div>
                   </div>
-                  <v-btn
-                    block
-                    color="grey darken-3"
-                    variant="elevated"
-                    class="mt-auto action-button"
-                    @click="goToGoal"
-                    elevation="2"
-                  >
+                  <v-btn block color="grey darken-3" variant="elevated" class="mt-auto action-button" @click="goToGoal"
+                    elevation="2">
                     <v-icon icon="mdi-pencil" class="mr-2" />
                     목표 설정하기
                   </v-btn>
@@ -224,14 +182,8 @@
 
           <!-- 추천 버튼 -->
           <div class="text-center mt-8">
-            <v-btn
-              color="grey darken-3"
-              size="x-large"
-              variant="elevated"
-              @click="goToRecommendations"
-              class="recommendation-button"
-              elevation="3"
-            >
+            <v-btn color="grey darken-3" size="x-large" variant="elevated" @click="goToRecommendations"
+              class="recommendation-button" elevation="3">
               <v-icon icon="mdi-lightbulb" class="mr-2" />
               맞춤 추천 보러가기
             </v-btn>
@@ -255,7 +207,7 @@ const goal = ref(null)
 const goalProgress = ref(null)
 const error = ref(null)
 const loading = ref(true)
-const loadingImages = ['images/shaker1.png','images/shaker2.png']
+const loadingImages = ['images/shaker1.png', 'images/shaker2.png']
 
 async function fetchStatus() {
   try {
@@ -402,6 +354,7 @@ onMounted(fetchStatus)
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -444,6 +397,9 @@ onMounted(fetchStatus)
   display: flex;
   flex-direction: column;
   justify-content: center;
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .action-button {
