@@ -5,34 +5,110 @@ import router from '@/router'
 // API 베이스 URL 설정
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/'
 
+// 디버깅 모드 설정 - 개발 환경에서만 활성화
+const DEBUG_MODE = import.meta.env.DEV || true
+
+// API 설정
+const API_CONFIG = {
+    timeout: 5000,  // 5초 타임아웃
+    retryCount: 3,  // 최대 재시도 횟수
+    retryDelay: 1000,  // 재시도 간격 (1초)
+}
+
+// 디버깅 유틸리티 함수
+const debug = {
+    // 요청 로깅 함수
+    logRequest: (config) => {
+        if (!DEBUG_MODE) return
+
+        console.group(`🚀 API 요청: ${config.method?.toUpperCase()} ${config.url}`)
+        console.log('전체 URL:', `${config.baseURL}${config.url}`)
+        console.log('헤더:', config.headers)
+        if (config.params) console.log('쿼리 파라미터:', config.params)
+        if (config.data) console.log('요청 데이터:', config.data)
+        console.groupEnd()
+    },
+
+    // 응답 로깅 함수
+    logResponse: (response) => {
+        if (!DEBUG_MODE) return
+
+        console.group(`✅ API 응답: ${response.config.method?.toUpperCase()} ${response.config.url}`)
+        console.log('상태:', response.status, response.statusText)
+        console.log('헤더:', response.headers)
+        console.log('데이터:', response.data)
+        console.groupEnd()
+    },
+
+    // 에러 로깅 함수
+    logError: (error) => {
+        if (!DEBUG_MODE) return
+
+        console.group(`❌ API 에러: ${error.config?.method?.toUpperCase() || 'UNKNOWN'} ${error.config?.url || 'UNKNOWN'}`)
+        console.error('메시지:', error.message)
+        if (error.response) {
+            console.error('상태:', error.response.status, error.response.statusText)
+            console.error('헤더:', error.response.headers)
+            console.error('데이터:', error.response.data)
+        }
+        console.error('전체 에러 객체:', error)
+        console.groupEnd()
+    }
+}
+
 // axios 인스턴스 생성
 const api = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 10000,
+    timeout: API_CONFIG.timeout,
     headers: {
         'Content-Type': 'application/json',
     },
     withCredentials: true  // CORS 인증 요청에 필요
 })
 
+// 재시도 로직을 위한 인터셉터
+api.interceptors.response.use(null, async (error) => {
+    const config = error.config;
+
+    // 재시도 횟수가 설정되지 않은 경우 초기화
+    if (!config || !config.retryCount) {
+        config.retryCount = API_CONFIG.retryCount;
+    }
+
+    // 재시도 가능한 에러인 경우
+    if (config.retryCount > 0 && (
+        error.code === 'ECONNABORTED' ||  // 타임아웃
+        error.response?.status >= 500 ||   // 서버 에러
+        error.response?.status === 429     // Too Many Requests
+    )) {
+        config.retryCount -= 1;
+
+        // 재시도 전 대기
+        await new Promise(resolve => setTimeout(resolve, API_CONFIG.retryDelay));
+
+        // 재시도
+        return api(config);
+    }
+
+    return Promise.reject(error);
+});
+
 // 요청 인터셉터 - 모든 요청에 토큰 추가
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token')
+        const authStore = useAuthStore()
+        const token = authStore.token
+
         if (token) {
             config.headers.Authorization = `Token ${token}`
         }
+
         // 요청 로깅
-        console.log('API 요청:', {
-            method: config.method,
-            url: `${config.baseURL}/${config.url}`,  // 전체 URL 로깅
-            data: config.data,
-            headers: config.headers
-        })
+        debug.logRequest(config)
         return config
     },
     (error) => {
-        console.error('API 요청 에러:', error)
+        debug.logError(error)
         return Promise.reject(error)
     }
 )
@@ -41,23 +117,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => {
         // 응답 로깅
-        console.log('API 응답:', {
-            status: response.status,
-            data: response.data,
-            headers: response.headers,
-            url: response.config.url  // 응답 URL 로깅
-        })
+        debug.logResponse(response)
         return response
     },
     (error) => {
         // 에러 로깅
-        console.error('API 에러:', {
-            message: error.message,
-            status: error.response?.status,
-            data: error.response?.data,
-            url: error.config?.url,  // 에러 발생 URL 로깅
-            method: error.config?.method
-        })
+        debug.logError(error)
 
         // 연결 거부 에러 처리
         if (error.code === 'ERR_CONNECTION_REFUSED') {
@@ -98,31 +163,58 @@ export const authAPI = {
 
     // 사용자 정보 조회
     getProfile: () => api.get('/accounts/profile/'),
-
-    // 사용자 정보 수정
-    updateProfile: (data) => api.patch('/accounts/profile/', data),
 }
 
 export const investmentAPI = {
     // 투자 프로필 상태 확인
-    checkStatus: () => api.get('/investment-profile/status/'),
+    checkStatus: () => api.get('/investment-profile/status/', {
+        timeout: 3000,  // 3초 타임아웃
+        retryCount: 2   // 2번 재시도
+    }),
 
     // 통합 프로필 조회
-    getProfile: () => api.get('/investment-profile/profile/'),
+    getProfile: () => api.get('/investment-profile/profile/', {
+        timeout: 5000,  // 5초 타임아웃
+        retryCount: 2   // 2번 재시도
+    }),
 
     // 투자 목표 관련
-    getGoal: () => api.get('/investment-profile/goal/'),
-    createGoal: (data) => api.post('/investment-profile/goal/create/', data),
-    updateGoal: (data) => api.patch('/investment-profile/goal/', data),
+    getGoal: () => api.get('/investment-profile/goal/', {
+        timeout: 3000,
+        retryCount: 2
+    }),
+    createGoal: (data) => api.post('/investment-profile/goal/create/', data, {
+        timeout: 5000,
+        retryCount: 2
+    }),
+    updateGoal: (data) => api.patch('/investment-profile/goal/', data, {
+        timeout: 5000,
+        retryCount: 2
+    }),
 
     // 투자 목표 진행 상황
-    getGoalProgress: () => api.get('/investment-profile/goal/progress/'),
-    updateCurrentAsset: (data) => api.patch('/investment-profile/goal/update-asset/', data),
+    getGoalProgress: () => api.get('/investment-profile/goal/progress/', {
+        timeout: 3000,
+        retryCount: 2
+    }),
+    updateCurrentAsset: (data) => api.patch('/investment-profile/goal/update-asset/', data, {
+        timeout: 5000,
+        retryCount: 2
+    }),
 
     // 투자 성향 관련
-    getRiskProfile: () => api.get('/investment-profile/risk/'),
-    createRiskProfile: (data) => api.post('/investment-profile/risk/create/', data),
-    updateRiskProfile: (data) => api.patch('/investment-profile/risk/', data),
+    getRiskProfile: () => api.get('/investment-profile/risk/', {
+        timeout: 3000,
+        retryCount: 2
+    }),
+    createRiskProfile: (data) => api.post('/investment-profile/risk/create/', data, {
+        timeout: 5000,
+        retryCount: 2
+    }),
+    updateRiskProfile: (data) => api.patch('/investment-profile/risk/', data, {
+        timeout: 5000,
+        retryCount: 2
+    }),
 }
 
 export const surveyAPI = {
@@ -135,7 +227,7 @@ export const surveyAPI = {
 
 export const recommendationAPI = {
     // 메인 추천 (목표 기반)
-    getByGoal: (params) => api.get('/suggests/by-goal/', { params }),
+    getByGoal: (params) => api.get('/suggests/recommendations/', { params }),
 
     // 예금만 추천
     getDepositOnly: (requiredReturn) =>
@@ -146,7 +238,16 @@ export const recommendationAPI = {
         api.get('/suggests/saving-only/', { params: { required_return: requiredReturn } }),
 
     // 주식 추천 저장
-    saveStocks: (stocks) => api.post('/suggests/save-stocks/', stocks),
+    saveStocks: (stocks) => api.post('/suggests/save-recommendations/', stocks),
+
+    // 저장된 추천 상품 조회
+    getSavedRecommendations: () => api.get('/suggests/saved-recommendations/'),
+
+    // 저장된 추천 상품 삭제
+    deleteSavedRecommendation: (id) => api.delete(`/suggests/saved-recommendations/${id}/`),
+
+    // 전체 저장된 추천 상품 삭제
+    deleteAllSavedRecommendations: () => api.delete('/suggests/saved-recommendations/'),
 }
 
 export const productAPI = {
@@ -213,4 +314,4 @@ export const externalAPI = {
 }
 
 // 기본 export
-export default api 
+export default api
