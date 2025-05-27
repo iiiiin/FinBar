@@ -7,17 +7,10 @@
         <Title :title="product.fin_prdt_nm || '상세 정보'" />
       </v-col>
       <v-col cols="2" class="text-right">
-      <BookmarkToggle
-      v-if="isAuth && product.deposit_product_id != null"
-      :initialToggled="isBookmarked"
-      :bookmarkId="bookmarkId"
-      :resource-id="product.deposit_product_id"
-      :apiClient="apiClient"
-      baseUrl="/bookmarks/deposits"
-      @update:toggled="isBookmarked = $event"
-      @update:bookmarkId="bookmarkId = $event"
-      @snackbar="showSnackbar($event.text, $event.color)"
-    />
+        <BookmarkToggle v-if="isAuth && product.deposit_product_id != null" :initialToggled="isBookmarked"
+          :bookmarkId="bookmarkId" :resource-id="product.deposit_product_id" :apiClient="apiClient"
+          baseUrl="/bookmarks/deposits" @update:toggled="isBookmarked = $event" @update:bookmarkId="bookmarkId = $event"
+          @snackbar="showSnackbar($event.text, $event.color)" />
       </v-col>
     </v-row>
 
@@ -36,24 +29,13 @@
       </v-card-text>
     </v-card>
 
-    <v-data-table
-      :headers="optionHeaders"
-      :items="product.options"
-      class="elevation-1"
-      item-key="deposit_product_id"
-    >
+    <v-data-table :headers="optionHeaders" :items="product.options" class="elevation-1" item-key="deposit_product_id">
       <template #item.intr_rate="{ item }">
         {{ item.intr_rate }}%
       </template>
     </v-data-table>
 
-    <v-snackbar
-      v-model="snackbar.show"
-      :timeout="snackbar.timeout"
-      :color="snackbar.color"
-      top
-      right
-    >
+    <v-snackbar v-model="snackbar.show" :timeout="snackbar.timeout" :color="snackbar.color" top right>
       {{ snackbar.text }}
       <template #action>
         <v-btn text @click="snackbar.show = false">닫기</v-btn>
@@ -99,9 +81,9 @@ export default {
       ]
     },
     isAuth() {
-     const authStore = useAuthStore()
-     return !!authStore.isLoggedIn
-   }
+      const authStore = useAuthStore()
+      return !!authStore.isAuthenticated
+    }
   },
   async mounted() {
     this.loading = true

@@ -48,22 +48,17 @@
             <v-list>
               <template v-for="comment in comments" :key="comment.id">
                 <v-list-item class="comment-item">
-                    <!-- 댓글 내용 or inline edit -->
-                    <template v-if="editingId !== comment.id">
-                      <div>
-                        <div class="font-weight-medium">{{ comment.nickname }}</div>
-                        <div>{{ comment.content }}</div>
-                        <div class="text-caption grey--text">{{ formatDate(comment.created_at) }}</div>
-                      </div>
-                    </template>
-                    <template v-else>
-                      <v-text-field
-                        v-model="editContent"
-                        dense
-                        outlined
-                        class="flex-grow-1 mr-2"
-                      />
-                    </template>
+                  <!-- 댓글 내용 or inline edit -->
+                  <template v-if="editingId !== comment.id">
+                    <div>
+                      <div class="font-weight-medium">{{ comment.nickname }}</div>
+                      <div>{{ comment.content }}</div>
+                      <div class="text-caption grey--text">{{ formatDate(comment.created_at) }}</div>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <v-text-field v-model="editContent" dense outlined class="flex-grow-1 mr-2" />
+                  </template>
 
                   <!-- 액션 버튼, 같은 행 우측 배치 -->
                   <v-list-item-action class="d-flex align-center">
@@ -83,12 +78,7 @@
 
             <!-- 댓글 입력 -->
             <v-form @submit.prevent="addComment">
-              <v-text-field
-                v-model="newComment"
-                label="댓글 입력"
-                dense
-                outlined
-              />
+              <v-text-field v-model="newComment" label="댓글 입력" dense outlined />
               <v-btn color="primary" @click="addComment">댓글 작성</v-btn>
             </v-form>
           </v-card-text>
@@ -105,6 +95,7 @@ import apiClient from '@/services/api'
 import NavigationBar from '@/components/NavigationBar.vue'
 import Title from '@/components/Title.vue'
 import { useAuthStore } from '@/stores/auth'
+import { marked } from 'marked'
 
 const router = useRouter()
 const route = useRoute()
@@ -142,7 +133,12 @@ async function loadComments() {
 async function loadData() {
   try {
     const { data: art } = await apiClient.get(`/articles/${route.params.id}/`)
-    article.value = art
+    article.value = {
+      title: art.title,
+      content: marked.parse(art.content),
+      created_at: art.created_at,
+      username: art.username
+    }
     comments.value = art.comments || []
   } catch (e) {
     console.error(e)
@@ -213,9 +209,11 @@ async function saveEdit(id) {
   try {
     await apiClient.put(
       `/articles/${route.params.id}/comment/${id}/`,
-      { article_pk: route.params.id,
+      {
+        article_pk: route.params.id,
         comment_pk: id,
-        content: editContent.value }
+        content: editContent.value
+      }
     )
     cancelEdit()
     await loadData()
@@ -251,19 +249,29 @@ async function deleteArticle() {
 </script>
 
 <style scoped>
-.text-center { text-align: center; }
-.comment-item { align-items: center; }
+.text-center {
+  text-align: center;
+}
+
+.comment-item {
+  align-items: center;
+}
+
 /* Vuetify v-btn 기본 스타일 오버라이드 */
 ::v-deep .v-btn {
-  background-color: #ffffff !important;       /* 흰 배경 */
-  color: #000000 !important;                  /* 검은 글씨 */
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important; /* 연한 회색 그림자 */
-  border: none !important;                    /* 테두리 제거 */
+  background-color: #ffffff !important;
+  /* 흰 배경 */
+  color: #000000 !important;
+  /* 검은 글씨 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+  /* 연한 회색 그림자 */
+  border: none !important;
+  /* 테두리 제거 */
 }
 
 /* Hover 시 그림자만 살짝 강조 */
 ::v-deep .v-btn:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* 선택된(primary) 혹은 text prop 은 그대로 두고, 색만 바뀌게 */
