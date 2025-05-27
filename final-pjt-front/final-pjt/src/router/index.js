@@ -21,6 +21,7 @@ import InvestmentProfileView from '@/views/InvestmentProfileView.vue'
 import InvestmentGoalView from '@/views/InvestmentGoalView.vue'
 import { investmentAPI } from '@/services/api'
 import HomeView from '@/views/HomeView.vue'
+import ProfileView from '@/views/ProfileView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,6 +53,12 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
+      component: ProfileView,
+    },
+    // 회원정보 수정 페이지
+    {
+      path: '/profileedit',
+      name: 'profileEdit',
       component: ProfileEditView,
     },
     // 커뮤니티 게시글 목록 페이지
