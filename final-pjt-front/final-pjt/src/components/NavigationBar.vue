@@ -38,7 +38,7 @@
             class="nav-icon"
             alt="회원정보수정"
           />
-          회원정보수정
+          마이페이지
         </v-btn>
       </template>
       <template v-else>
@@ -115,7 +115,7 @@
               alt="회원정보수정"
             />
           </template>
-          <v-list-item-title>회원정보수정</v-list-item-title>
+          <v-list-item-title>마이페이지</v-list-item-title>
         </v-list-item>
       </template>
 
