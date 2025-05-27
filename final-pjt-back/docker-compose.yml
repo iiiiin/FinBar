@@ -1,0 +1,31 @@
+services:
+  web:
+    build: .
+    container_name: final
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/final_pjt
+    env_file:
+      - .env
+    depends_on:
+      - db
+    environment:
+      - DJANGO_SETTINGS_MODULE=final_pjt.settings
+    command: python final_pjt/manage.py runserver 0.0.0.0:8000
+
+  db:
+    image: postgres:17
+    container_name: postgres_db
+    restart: always
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+
+volumes:
+  dbdata:

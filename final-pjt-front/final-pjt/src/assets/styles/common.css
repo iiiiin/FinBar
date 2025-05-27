@@ -1,0 +1,279 @@
+/* Font Import */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+/* Color Variables */
+:root {
+  /* Colors */
+  --white: #FFFFFF;
+  --black: #000000;
+  --charcoal: #2C3E50;
+  --charcoal-light: #34495E;
+  --gray-50: #FAFAFA;
+  --gray-100: #F5F5F5;
+  --gray-200: #EEEEEE;
+  --gray-300: #E0E0E0;
+  --gray-400: #BDBDBD;
+  --gray-500: #9E9E9E;
+  --gray-600: #757575;
+  --gray-700: #616161;
+  --gray-800: #424242;
+  --gray-900: #212121;
+
+  /* Button Colors */
+  --btn-primary: var(--charcoal);
+  --btn-primary-hover: var(--charcoal-light);
+  --btn-secondary: var(--gray-600);
+  --btn-secondary-hover: var(--gray-700);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Border Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+}
+
+/* Global Styles */
+body {
+  background-color: var(--gray-50);
+  color: var(--gray-900);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Global Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideRight {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Responsive Container */
+.container-responsive {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+  .container-responsive {
+    width: 100%;
+    padding: var(--spacing-sm);
+  }
+}
+
+/* Common Card Styles */
+.card-hover {
+  transition: var(--transition-normal);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Button Styles */
+.btn-primary {
+  background-color: var(--accent-blue);
+  color: white;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 4px;
+  border: none;
+  transition: var(--transition-fast);
+}
+
+.btn-primary:hover {
+  background-color: color-mix(in srgb, var(--accent-blue) 90%, white);
+  transform: translateY(-2px);
+}
+
+/* Form Styles */
+.form-control {
+  border: 1px solid var(--gray-300);
+  border-radius: 4px;
+  padding: var(--spacing-sm);
+  transition: var(--transition-fast);
+}
+
+.form-control:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(4, 178, 217, 0.1);
+}
+
+/* Grid System */
+.grid {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+/* Typography */
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  margin-bottom: var(--spacing-md);
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--gray-500);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Utility Classes */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+
+.mt-1 { margin-top: var(--spacing-xs); }
+.mt-2 { margin-top: var(--spacing-sm); }
+.mt-3 { margin-top: var(--spacing-md); }
+.mt-4 { margin-top: var(--spacing-lg); }
+.mt-5 { margin-top: var(--spacing-xl); }
+
+.mb-1 { margin-bottom: var(--spacing-xs); }
+.mb-2 { margin-bottom: var(--spacing-sm); }
+.mb-3 { margin-bottom: var(--spacing-md); }
+.mb-4 { margin-bottom: var(--spacing-lg); }
+.mb-5 { margin-bottom: var(--spacing-xl); }
+
+/* Animations */
+.fade-in { animation: fadeIn var(--transition-normal); }
+.slide-up { animation: slideUp var(--transition-normal); }
+.pulse { animation: pulse var(--transition-normal) infinite; }
+
+/* Card Styles */
+.v-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-normal);
+}
+
+.v-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Button Styles */
+.v-btn {
+  text-transform: none !important;
+  font-family: 'Pretendard', sans-serif !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.v-btn.v-btn--variant-flat {
+  background-color: var(--btn-primary) !important;
+  color: white !important;
+}
+
+.v-btn.v-btn--variant-flat:hover {
+  background-color: var(--btn-primary-hover) !important;
+}
+
+.v-btn.v-btn--variant-outlined {
+  border-color: var(--btn-primary) !important;
+  color: var(--btn-primary) !important;
+}
+
+.v-btn.v-btn--variant-outlined:hover {
+  background-color: rgba(44, 62, 80, 0.05) !important;
+}
+
+/* Input Styles */
+.v-field--focused .v-field__outline__start,
+.v-field--focused .v-field__outline__end {
+  border-color: var(--charcoal) !important;
+}
+
+/* List Styles */
+.v-list-item {
+  transition: var(--transition-normal);
+}
+
+.v-list-item:hover {
+  background: var(--gray-100);
+  transform: translateX(4px);
+}
+
+/* Container Styles */
+.v-container {
+  animation: fadeIn var(--transition-normal);
+}
+
+/* Row Styles */
+.v-row {
+  animation: slideUp var(--transition-normal);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  :root {
+    --spacing-lg: 1rem;
+    --spacing-xl: 1.5rem;
+  }
+  
+  .v-card {
+    border-radius: var(--radius-md);
+  }
+} 
