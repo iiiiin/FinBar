@@ -85,8 +85,47 @@
                         </v-card-text>
                     </v-card>
 
+                    <!-- 경고 메시지 -->
+                    <v-card v-if="error" elevation="3" class="mb-6 rounded-lg">
+                        <v-card-text class="pa-6">
+                            <v-alert
+                                type="warning"
+                                variant="tonal"
+                                class="mb-0 warning-alert"
+                            >
+                                <div class="d-flex flex-column">
+                                    <div class="d-flex align-center mb-4">
+                                        <v-icon icon="mdi-alert" class="mr-2" size="large" />
+                                        <span class="text-h6">투자 목표 재검토 필요</span>
+                                    </div>
+                                    <p class="text-body-1 mb-4">{{ error }}</p>
+                                    <div class="d-flex justify-end gap-2">
+                                        <v-btn
+                                            color="primary"
+                                            variant="text"
+                                            @click="refreshRecommendations"
+                                            class="action-button"
+                                        >
+                                            <v-icon icon="mdi-refresh" class="mr-2" />
+                                            다시 시도
+                                        </v-btn>
+                                        <v-btn
+                                            color="primary"
+                                            variant="elevated"
+                                            @click="router.push('/investment-profile')"
+                                            class="action-button"
+                                        >
+                                            <v-icon icon="mdi-pencil" class="mr-2" />
+                                            투자 프로필 수정하기
+                                        </v-btn>
+                                    </div>
+                                </div>
+                            </v-alert>
+                        </v-card-text>
+                    </v-card>
+
                     <!-- 추천 상품 목록 -->
-                    <v-card elevation="3" class="rounded-lg">
+                    <v-card v-if="!error && store.items.length > 0" elevation="3" class="rounded-lg">
                         <v-card-title class="text-h5 py-4 px-6 bg-primary text-white">
                             <v-icon class="mr-3">mdi-star</v-icon>
                             추천 상품 목록
@@ -126,7 +165,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useRecommendationStore } from '@/stores/recommendationStore';
 import NavigationBar from '@/components/NavigationBar.vue';
 import RecommendationItem from '@/components/RecommendationItem.vue';
-import apiClient from '@/services/api';
+import { recommendationAPI, investmentAPI } from '@/services/api';
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -156,7 +195,7 @@ async function saveStockRecommendation(stock) {
     }
 
     try {
-        await store.saveStockRecommendations([stock]);
+        await recommendationAPI.saveStocks(stock);
         showSnackbar('추천 상품이 저장되었습니다.', 'success');
     } catch (err) {
         console.error('추천 저장 실패:', err);
@@ -181,13 +220,31 @@ async function refreshRecommendations() {
     loading.value = true;
     error.value = '';
     try {
-        const response = await apiClient.getByGoal();
-        
+        // 1. 투자 프로필 정보 가져오기
+        const profileResponse = await investmentAPI.getProfile();
+        if (!profileResponse?.data) {
+            throw new Error('투자 프로필 정보를 불러올 수 없습니다.');
+        }
+
+        // 2. 추천 상품 가져오기
+        const response = await recommendationAPI.getByGoal();
         if (!response?.data) {
             throw new Error('추천 데이터를 불러올 수 없습니다.');
         }
 
-        // 추천 상품 목록 업데이트
+        // 경고 메시지가 있는 경우 처리
+        if (response.data.warning) {
+            error.value = response.data.message || '현재 투자 성향으로는 목표 수익률 달성이 어렵습니다.';
+            store.items = [];
+            store.recommendationSummary = {
+                risk_type: response.data.factors?.by_risk || '',
+                required_return: response.data.required_return || 0,
+                preferred_period: response.data.factors?.preferred_period || 0
+            };
+            return;
+        }
+
+        // 정상적인 추천 상품 목록 업데이트
         store.items = response.data.items || [];
         
         // store의 recommendationSummary 업데이트
@@ -202,8 +259,8 @@ async function refreshRecommendations() {
             console.log('API 요청이 취소되었습니다.');
             return;
         }
-        console.error('추천 데이터 조회 실패:', err);
-        error.value = err.message || '추천 데이터를 불러오는데 실패했습니다.';
+        console.error('데이터 조회 실패:', err);
+        error.value = err.message || '데이터를 불러오는데 실패했습니다.';
         showSnackbar(error.value, 'error');
         if (err.response?.status === 401) {
             auth.clearAuth();
@@ -263,5 +320,17 @@ onBeforeUnmount(() => {
 /* 네비게이션 바 아래 여백 */
 .mt-8 {
     margin-top: 5rem !important;
+}
+
+.warning-alert {
+    border-radius: 12px;
+}
+
+.action-button {
+    min-width: 160px;
+}
+
+.gap-2 {
+    gap: 8px;
 }
 </style>

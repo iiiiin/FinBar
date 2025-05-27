@@ -1,65 +1,37 @@
-// src/store/auth.js
+// src/stores/auth.js
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import axios from 'axios'
-import apiClient from '@/services/api'
+import { authAPI } from '@/services/api' // api.js에서 export한 authAPI 사용
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || null)
   const user = ref(null)
-
-  // localStorage에서 user 데이터를 안전하게 파싱
-  try {
-    const storedUser = localStorage.getItem('user')
-    if (storedUser) {
-      user.value = JSON.parse(storedUser)
-    }
-  } catch (error) {
-    console.error('사용자 데이터 파싱 실패:', error)
-    localStorage.removeItem('user')
-  }
-
   const isAuthenticated = computed(() => !!token.value)
 
   // 로그인
   async function login(credentials) {
     try {
+      console.log('authStore.login 호출:', credentials)
       const response = await authAPI.login(credentials)
-      console.log('로그인 응답:', response.data)
-
-      // dj-rest-auth는 토큰을 key로 반환
       const newToken = response.data.key
-      if (!newToken) {
-        throw new Error('토큰이 응답에 포함되어 있지 않습니다.')
-      }
-
-      // 토큰 저장
+      if (!newToken) throw new Error('토큰이 응답에 없습니다')
       token.value = newToken
       localStorage.setItem('token', newToken)
-
-      // axios 기본 헤더에 토큰 설정
-      axios.defaults.headers.common['Authorization'] = `Token ${newToken}`
-      console.log('설정된 인증 헤더:', axios.defaults.headers.common['Authorization'])
-
+      // apiClient 인터셉터가 자동으로 헤더에 토큰을 추가함
       return true
     } catch (error) {
-      console.error('로그인 실패:', error)
-      // 토큰 관련 데이터 초기화
-      token.value = null
-      localStorage.removeItem('token')
-      delete axios.defaults.headers.common['Authorization']
+      clearAuth()
       throw error
     }
   }
 
   // 로그아웃
-  function logout() {
-    token.value = null
-    user.value = null
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    delete axios.defaults.headers.common['Authorization']
+  async function logout() {
+    try {
+      await authAPI.logout()
+    } catch (e) { }
+    clearAuth()
   }
 
   // 인증 정보 초기화
@@ -68,7 +40,19 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    delete axios.defaults.headers.common['Authorization']
+    // apiClient 인터셉터가 있으므로 별도 헤더 삭제 불필요
+  }
+
+  // 사용자 정보 가져오기 (선택)
+  async function fetchUser() {
+    try {
+      const response = await authAPI.getProfile()
+      user.value = response.data
+      localStorage.setItem('user', JSON.stringify(response.data))
+    } catch (e) {
+      user.value = null
+      localStorage.removeItem('user')
+    }
   }
 
   return {
@@ -77,6 +61,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     login,
     logout,
-    clearAuth
+    clearAuth,
+    fetchUser,
   }
 })

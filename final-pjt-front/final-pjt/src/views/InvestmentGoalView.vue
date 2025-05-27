@@ -224,7 +224,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import NavigationBar from '@/components/NavigationBar.vue'
 import { useAuthStore } from '@/stores/auth'
-import apiClient from '@/services/api'
+import { investmentAPI } from '@/services/api'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -297,8 +297,8 @@ watch([
 // Methods
 async function fetchExistingGoal() {
   try {
-    const { data } = await apiClient.getGoal()
-    hasExistingGoal.value = true
+    const { data } = await investmentAPI.getGoal();
+    hasExistingGoal.value = true;
     goalData.value = {
       current_asset: data.current_asset,
       target_asset: data.target_asset,
@@ -307,17 +307,17 @@ async function fetchExistingGoal() {
     }
   } catch (e) {
     if (e.response?.status === 404) {
-      hasExistingGoal.value = false
+      hasExistingGoal.value = false;
     } else {
-      console.error('목표 조회 실패:', e)
+      console.error('목표 조회 실패:', e);
     }
   }
 }
 
 async function submitGoal() {
-  if (!form.value.validate()) return
+  if (!form.value.validate()) return;
 
-  submitting.value = true
+  submitting.value = true;
   try {
     // 데이터 형식 변환 및 검증
     const formattedData = {
@@ -325,61 +325,61 @@ async function submitGoal() {
       target_asset: parseInt(goalData.value.target_asset),
       target_years: parseInt(goalData.value.target_years),
       preferred_period: parseInt(goalData.value.preferred_period)
-    }
+    };
 
     // 데이터 로깅 추가
-    console.log('제출할 데이터:', formattedData)
+    console.log('제출할 데이터:', formattedData);
 
     // 데이터 유효성 검사
     if (isNaN(formattedData.current_asset) || 
         isNaN(formattedData.target_asset) || 
         isNaN(formattedData.target_years) || 
         isNaN(formattedData.preferred_period)) {
-      throw new Error('모든 필드를 올바른 숫자로 입력해주세요.')
+      throw new Error('모든 필드를 올바른 숫자로 입력해주세요.');
     }
 
     // 추가 유효성 검사
     if (formattedData.target_asset <= formattedData.current_asset) {
-      throw new Error('목표 자산은 현재 자산보다 커야 합니다.')
+      throw new Error('목표 자산은 현재 자산보다 커야 합니다.');
     }
 
     if (formattedData.target_years < 1 || formattedData.target_years > 50) {
-      throw new Error('목표 기간은 1년에서 50년 사이여야 합니다.')
+      throw new Error('목표 기간은 1년에서 50년 사이여야 합니다.');
     }
 
     try {
       if (hasExistingGoal.value) {
         // 수정
-        const response = await apiClient.updateGoal(formattedData)
-        console.log('수정 응답:', response)
+        const response = await investmentAPI.updateGoal(formattedData);
+        console.log('수정 응답:', response);
       } else {
         // 생성
-        const response = await apiClient.createGoal(formattedData)
-        console.log('생성 응답:', response)
+        const response = await investmentAPI.createGoal(formattedData);
+        console.log('생성 응답:', response);
       }
       
-      router.push('/recommendations')
+      router.push('/recommendations');
     } catch (apiError) {
-      console.error('API 에러:', apiError.response?.data || apiError)
-      throw apiError
+      console.error('API 에러:', apiError.response?.data || apiError);
+      throw apiError;
     }
   } catch (e) {
     // 에러 메시지 개선
     if (e.message) {
       // 클라이언트 측 유효성 검사 에러
-      alert(e.message)
+      alert(e.message);
     } else if (e.response?.data?.error) {
       // 서버 측 에러 메시지
-      alert(e.response.data.error)
+      alert(e.response.data.error);
       if (e.response.data.details) {
-        console.error('상세 에러:', e.response.data.details)
+        console.error('상세 에러:', e.response.data.details);
       }
     } else {
       // 기타 에러
-      alert('목표 설정 중 오류가 발생했습니다. 입력값을 확인해주세요.')
+      alert('목표 설정 중 오류가 발생했습니다. 입력값을 확인해주세요.');
     }
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 

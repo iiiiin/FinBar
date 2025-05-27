@@ -19,7 +19,7 @@ import RecommendationPageView from '@/views/RecommendationPageView.vue'
 import SurveyPageView from '@/views/SurveyPageView.vue'
 import InvestmentProfileView from '@/views/InvestmentProfileView.vue'
 import InvestmentGoalView from '@/views/InvestmentGoalView.vue'
-import apiClient from '@/services/api'
+import { investmentAPI } from '@/services/api'
 import HomeView from '@/views/HomeView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import apiClient from '@/services/api';
+import { surveyAPI } from '@/services/api';
 
 export const useSurveyStore = defineStore('survey', {
     state: () => ({
@@ -25,7 +25,7 @@ export const useSurveyStore = defineStore('survey', {
     },
     actions: {
         // 인증 헤더 생성
-        authHeader() {
+        getAuthHeader() {
             const token = localStorage.getItem('token');
             return token ? { Authorization: `Token ${token}` } : {};
         },
@@ -35,16 +35,35 @@ export const useSurveyStore = defineStore('survey', {
             this.loading = true;
             this.error = null;
             try {
-                const response = await apiClient.getQuestions();
-                console.log('받은 설문 데이터:', response.data);
-                if (!Array.isArray(response.data)) {
-                    throw new Error('Invalid response format');
+                console.log('설문 데이터 요청 시작');
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('인증 토큰이 없습니다.');
                 }
+
+                const response = await surveyAPI.getQuestions(this.getAuthHeader());
+
+                console.log('설문 데이터 응답:', response);
+
+                if (!response?.data) {
+                    throw new Error('응답 데이터가 없습니다.');
+                }
+
+                if (!Array.isArray(response.data)) {
+                    console.error('잘못된 응답 형식:', response.data);
+                    throw new Error('서버 응답 형식이 올바르지 않습니다.');
+                }
+
                 this.questions = response.data;
+                console.log('설문 데이터 저장 완료:', this.questions);
                 return response.data;
             } catch (err) {
                 console.error('설문 데이터 가져오기 실패:', err);
-                this.error = err;
+                if (err.response) {
+                    console.error('서버 응답:', err.response.data);
+                    console.error('상태 코드:', err.response.status);
+                }
+                this.error = err.response?.data?.message || err.message || '설문 데이터를 가져오는데 실패했습니다.';
                 throw err;
             } finally {
                 this.loading = false;
@@ -77,9 +96,7 @@ export const useSurveyStore = defineStore('survey', {
                 }));
 
                 console.log('제출할 답변 데이터:', { answers: formattedAnswers });
-                const response = await apiClient.submitAnswers({
-                    answers: formattedAnswers
-                });
+                const response = await surveyAPI.submitAnswers(formattedAnswers, this.getAuthHeader());
                 console.log('제출 응답:', response.data);
 
                 return response;

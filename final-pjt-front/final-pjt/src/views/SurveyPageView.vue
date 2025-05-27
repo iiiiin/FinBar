@@ -201,7 +201,8 @@ import { useSurveyStore } from '@/stores/surveyStore';
 import { useRouter } from 'vue-router';
 import SurveyQuestionItem from '@/components/SurveyQuestionItem.vue';
 import NavigationBar from '@/components/NavigationBar.vue';
-import apiClient from '@/services/api';
+import { surveyAPI } from '@/services/api';
+import { investmentAPI } from '@/services/api';
 
 const router = useRouter();
 const store = useSurveyStore();
@@ -272,21 +273,27 @@ async function onSubmit() {
     
     submitting.value = true;
     try {
-        const response = await store.submitAnswers();
+        // 현재 선택된 답변들을 백엔드가 기대하는 형식으로 변환
+        const formattedAnswers = Object.entries(answers.value).map(([questionId, choiceId]) => ({
+            question_id: parseInt(questionId),
+            choice_id: choiceId
+        }));
+
+        const response = await surveyAPI.submitAnswers({ answers: formattedAnswers });
         resultData.value = {
             risk_type: response.data.risk_type,
             total_score: response.data.total_score
         };
 
         try {
-            await apiClient.getRiskProfile();
-            await apiClient.updateRiskProfile({
+            await investmentAPI.getRiskProfile();
+            await investmentAPI.updateRiskProfile({
                 total_score: resultData.value.total_score,
                 risk_type: resultData.value.risk_type
             });
         } catch (e) {
             if (e.response?.status === 404) {
-                await apiClient.createRiskProfile({
+                await investmentAPI.createRiskProfile({
                     total_score: resultData.value.total_score,
                     risk_type: resultData.value.risk_type
                 });
@@ -309,9 +316,18 @@ async function onSubmit() {
 
 async function retryFetch() {
     try {
+        console.log('설문 데이터 재요청 시작');
         await store.fetchQuestions();
     } catch (err) {
         console.error('Failed to fetch questions:', err);
+        if (err.response?.status === 401) {
+            alert('로그인이 필요합니다.');
+            router.push('/login');
+        } else if (err.response?.status === 500) {
+            alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        } else {
+            alert(err.message || '설문 데이터를 불러오는데 실패했습니다.');
+        }
     }
 }
 
@@ -322,13 +338,29 @@ function goToProfile() {
 // Lifecycle
 onMounted(async () => {
     try {
-        if (!localStorage.getItem('token')) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('토큰이 없습니다.');
+            alert('로그인이 필요합니다.');
             router.push('/login');
             return;
         }
+
+        console.log('컴포넌트 마운트 - 설문 데이터 요청 시작');
         await store.fetchQuestions();
     } catch (err) {
         console.error('Error in component mount:', err);
+        if (err.response?.status === 401) {
+            console.error('인증 오류:', err.response.data);
+            alert('로그인이 필요합니다.');
+            router.push('/login');
+        } else if (err.response?.status === 500) {
+            console.error('서버 오류:', err.response.data);
+            alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        } else {
+            console.error('기타 오류:', err);
+            alert(err.message || '설문 데이터를 불러오는데 실패했습니다.');
+        }
     }
 });
 </script>

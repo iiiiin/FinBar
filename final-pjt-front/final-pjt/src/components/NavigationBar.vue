@@ -166,7 +166,7 @@ import { useAuthStore } from '@/stores/auth'
 const router    = useRouter()
 const route     = useRoute()
 const authStore = useAuthStore()
-const isAuth    = computed(() => authStore.isLoggedIn)
+const isAuth    = computed(() => authStore.isAuthenticated)
 const drawer    = ref(false)
 
 const navItems = [
