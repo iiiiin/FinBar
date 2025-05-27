@@ -1,27 +1,25 @@
 <template>
   <v-container class="mx-auto" :style="{ maxWidth: '800px' }">
-    <!-- 네비게이션 바 -->
     <NavigationBar />
 
-    <!-- 페이지 제목: 고정된 타이틀 -->
     <v-row class="my-4">
       <v-col cols="12">
         <Title title="예·적금 정보 조회" />
       </v-col>
     </v-row>
 
-    <!-- 예금/적금 토글 -->
+    <!-- 토글 -->
     <v-row class="mb-4" dense>
       <v-col cols="6">
         <v-btn
-          :color="type === 'deposit' ? 'primary' : 'grey lighten-1'"
+          :color="type==='deposit'?'primary':'grey lighten-1'"
           block
           @click="changeType('deposit')"
         >예금</v-btn>
       </v-col>
       <v-col cols="6">
         <v-btn
-          :color="type === 'saving' ? 'primary' : 'grey lighten-1'"
+          :color="type==='saving'?'primary':'grey lighten-1'"
           block
           @click="changeType('saving')"
         >적금</v-btn>
@@ -51,37 +49,34 @@
       </v-col>
     </v-row>
 
-    <div v-if="loading" class="loading-images">
-      <img
-        :src="loadingImages[currentLoadingIndex]"
-        alt="로딩 중"
-        class="loading-img"
-      />
-    </div>
+    <!-- 로딩 -->
+    <LoadingSpinner
+      v-if="loading"
+      :images="loadingImages"
+      :interval="100"
+    />
 
     <!-- 결과 테이블 -->
     <v-data-table
       :headers="headers"
-      :items="loading ? [] : paginatedItems"
+      :items="paginatedItems"
       :loading="loading"
       class="elevation-1"
       item-key="key"
       fixed-header
-      height="400px"
+      height="400"
       hide-default-footer
     >
-
-
-      <!-- 상품명 컬럼: 클릭 시 상세 페이지로 이동 -->
+      <!-- 상품명 클릭 이동 -->
       <template #item.finPrdtNm="{ item }">
-        <router-link :to="detailRoute(item)">
-           {{ item.finPrdtNm }}
-        </router-link>
-      </template>
-
-      <!-- 금리1 포맷을 위한 슬롯 -->
-      <template #item.intrRate="{ item }">
-        {{ item.intrRate }}%
+        <span v-if="detailRoute(item).params.id">
+          <router-link :to="detailRoute(item)">
+            {{ item.finPrdtNm }}
+          </router-link>
+        </span>
+        <span v-else>
+          {{ item.finPrdtNm }}
+        </span>
       </template>
     </v-data-table>
 
@@ -93,7 +88,6 @@
     />
     <PlaceFooter src="/images/plate.png" alt="메뉴접시" />
   </v-container>
-  
 </template>
 
 <script>
@@ -102,144 +96,111 @@ import NavigationBar from '@/components/NavigationBar.vue'
 import Title from '@/components/Title.vue'
 import Pagination from '@/components/Pagination.vue'
 import PlaceFooter from '@/components/PlaceFooter.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 export default {
   name: 'ProductListView',
-  components: { NavigationBar, Title, Pagination, PlaceFooter },
+  components: {
+    NavigationBar,
+    Title,
+    Pagination,
+    PlaceFooter,
+    LoadingSpinner,
+  },
   data() {
     return {
-      type: 'deposit',               // 예금/적금 상태
-      rawProducts: [],               // API에서 받아온 데이터
+      type: 'deposit',
+      rawProducts: [],
+      totalCount: 0,
       filters: { bank: null, term: null },
       loading: false,
-      loadingImages: [
-        'images/shaker1.png',
-        'images/shaker2.png'
-      ],
-      currentLoadingIndex: 0,
-      _loadingTimer: null,
-      currentPage: 1,                // 현재 페이지
-      perPage: 10,                   // 페이지당 항목 수
-    }
-  },
-  watch: {
-    loading(newVal) {
-      if (newVal) {
-        // 로딩 시작 시 500ms마다 인덱스 업데이트
-        this._loadingTimer = setInterval(() => {
-          this.currentLoadingIndex =
-            (this.currentLoadingIndex + 1) % this.loadingImages.length
-        }, 500)
-      } else {
-        // 로딩 끝나면 타이머 해제, 인덱스 초기화
-        clearInterval(this._loadingTimer)
-        this.currentLoadingIndex = 0
-      }
+      loadingImages: ['images/shaker1.png','images/shaker2.png'],
+      currentPage: 1,
+      perPage: 10,
     }
   },
   computed: {
-    // API 데이터 평탄화: DepositProduct + DepositProductOptions 필드 모두 포함
-    optionsFlatten() {
-      return this.rawProducts.reduce((acc, product) => {
-        (product.options || []).forEach(opt => {
-          acc.push({
-            // 고유 키
-            key: `${product.fin_prdt_cd}_${opt.intr_rate_type_nm}_${opt.save_trm}`,
-
-            // DepositProduct
-            finCoNo:         product.fin_co_no,
-            korCoNm:         product.kor_co_nm,
-            finPrdtCd:       product.fin_prdt_cd,
-            finPrdtNm:       product.fin_prdt_nm,
-            joinWay:         product.join_way,
-            mtrtInt:         product.mtrt_int,
-            spclCnd:         product.spcl_cnd,
-            joinDeny:        product.join_deny,
-            joinMember:      product.join_member,
-            etcNote:         product.etc_note,
-            maxLimit:        product.max_limit,
-            dclsStrtDay:     product.dcls_strt_day,
-
-            // DepositProductOptions
-            depositProductId: opt.deposit_product_id,
-            savingProductId: opt.saving_product_id,
-            intrRateTypeNm:   opt.intr_rate_type_nm,
-            saveTrm:          opt.save_trm,
-            intrRate:         opt.intr_rate,
-            intrRate2:        opt.intr_rate2,
+    rowItems() {
+      return this.rawProducts.map(prod => {
+        const row = {
+          key: prod.fin_prdt_cd,
+          depositProductId: prod.deposit_product_id,
+          savingProductId: prod.saving_product_id,
+          dclsStrtDay: prod.dcls_strt_day,
+          korCoNm: prod.kor_co_nm,
+          finPrdtNm: prod.fin_prdt_nm,
+          rate3:  '-', rate6:  '-', rate12: '-', rate24: '-',
+        }
+        if (Array.isArray(prod.options)) {
+          prod.options.forEach(opt => {
+            const v = opt.intr_rate2 != null ? opt.intr_rate2 : '-'
+            switch (opt.save_trm) {
+              case '3':  row.rate3  = v; break
+              case '6':  row.rate6  = v; break
+              case '12': row.rate12 = v; break
+              case '24': row.rate24 = v; break
+            }
           })
-        })
-        return acc
-      }, [])
+        }
+        return row
+      })
     },
-    // 필터 적용
-    filteredItems() {
-      return this.optionsFlatten.filter(item =>
-        (!this.filters.bank || item.korCoNm === this.filters.bank) &&
-        (!this.filters.term || item.saveTrm === this.filters.term)
-      )
-    },
-    // 전체 페이지 수
-    totalPages() {
-      return Math.ceil(this.filteredItems.length / this.perPage) || 1
-    },
-    // 현재 페이지 아이템
     paginatedItems() {
-      const start = (this.currentPage - 1) * this.perPage
-      return this.filteredItems.slice(start, start + this.perPage)
+      return this.rowItems
     },
-    // 테이블 헤더 정의
+    totalPages() {
+      return Math.ceil(this.totalCount / this.perPage) || 1
+    },
     headers() {
       return [
-        { text: '공시 시작일', value: 'dclsStrtDay' },
-        { text: '은행명',       value: 'korCoNm' },
-        { text: '상품명',       value: 'finPrdtNm' },
-        { text: '금리 유형',     value: 'intrRateTypeNm' },
-        { text: '저축 기간',     value: 'saveTrm' },
-        { text: '금리1',         value: 'intrRate' },
-        { text: '금리2',         value: 'intrRate2' },
+        { title: '공시 시작일', key: 'dclsStrtDay' },
+        { title: '은행명',       key: 'korCoNm'   },
+        { title: '상품명',       key: 'finPrdtNm' },
+        { title: '3개월',        key: 'rate3'     },
+        { title: '6개월',        key: 'rate6'     },
+        { title: '12개월',       key: 'rate12'    },
+        { title: '24개월',       key: 'rate24'    },
       ]
     },
-    // 필터 옵션
     bankItems() {
-      return [...new Set(this.optionsFlatten.map(i => i.korCoNm))]
+      return [...new Set(this.rowItems.map(r => r.korCoNm))]
     },
     termItems() {
-      return [...new Set(this.optionsFlatten.map(i => i.saveTrm))]
+      return ['3','6','12','24']
     },
   },
   methods: {
     changeType(newType) {
-      if (this.type !== newType) {
-        this.type = newType
-        this.fetchProducts()
-      }
+      this.currentPage = 1
+      this.type = newType
+      this.fetchProducts(1)
     },
-   /**
-    * 예금/적금 모드에 따라
-    * DepositDetail 또는 SavingDetail 로 이동할 라우트 객체 반환
-    */
-   detailRoute(item) {
-    if (this.type === 'deposit') {
-      return { name: 'depositDetail', params: { id: item.depositProductId } }
-    } else {
-      return { name: 'savingDetail',  params: { id: item.savingProductId  } }
-    }
-  },
-    async fetchProducts() {
+    detailRoute(item) {
+      const id = this.type === 'deposit'
+        ? item.depositProductId
+        : item.savingProductId
+      return { name: this.type==='deposit'?'depositDetail':'savingDetail', params: { id }}
+    },
+    async fetchProducts(page = 1) {
       this.loading = true
+      this.currentPage = page
       try {
         const url = this.type === 'deposit'
           ? 'http://127.0.0.1:8000/products/deposits/'
           : 'http://127.0.0.1:8000/products/savings/'
-        const res = await axios.get(url)
-        const data = Array.isArray(res.data)
-          ? res.data
-          : res.data.results || []
-        this.rawProducts = data
-        this.filters.bank = null
-        this.filters.term = null
-        this.currentPage = 1
+        const params = {
+          page,
+          page_size: this.perPage,
+          kor_co_nm: this.filters.bank,
+        }
+        if (this.filters.term) {
+          params[ this.type==='deposit'
+            ? 'depositproductoptions__save_trm'
+            : 'savingproductoptions__save_trm' ] = this.filters.term
+        }
+        const res = await axios.get(url, { params })
+        this.rawProducts = res.data.results || []
+        this.totalCount   = res.data.count || 0
       } catch (e) {
         console.error(e)
         this.$toast.error('데이터 조회 중 오류가 발생했습니다.')
@@ -248,10 +209,10 @@ export default {
       }
     },
     applyFilters() {
-      this.currentPage = 1
+      this.fetchProducts(1)
     },
     onPageChange(page) {
-      this.currentPage = page
+      this.fetchProducts(page)
     },
   },
   mounted() {
@@ -261,41 +222,12 @@ export default {
 </script>
 
 <style scoped>
-.plate-footer {
-  max-width: 800px;    /* v-container 와 동일 너비 */
-  margin: 0 auto;      /* 가운데 정렬 */
-}
-.plate-img {
-  display: block;      /* inline-block 여백 제거 */
-  width: 100%;         /* 부모(plate-footer) 폭에 딱 맞춤 */
-  height: auto;        /* 원본 비율 유지 */
-}
-/* Vuetify v-btn 기본 스타일 오버라이드 */
-::v-deep .v-btn {
-  background-color: #ffffff !important;       /* 흰 배경 */
-  color: #000000 !important;                  /* 검은 글씨 */
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important; /* 연한 회색 그림자 */
-  border: none !important;                    /* 테두리 제거 */
-}
-
-/* Hover 시 그림자만 살짝 강조 */
-::v-deep .v-btn:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-}
-
-/* 선택된(primary) 혹은 text prop 은 그대로 두고, 색만 바뀌게 */
-::v-deep .v-btn--text {
-  background-color: transparent !important;
-  box-shadow: none !important;
-  color: #000000 !important;
-}
 .loading-images {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 200px; /* 원하는 높이만큼 */
+  height: 200px;
 }
-
 .loading-img {
   width: 120px;
   height: auto;

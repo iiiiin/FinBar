@@ -27,7 +27,7 @@
     <v-toolbar-items class="hidden-sm-and-down">
       <template v-if="isAuth">
         <v-btn text @click="logout">  
-          <img src="/images/wineglass.png" class="nav-icon" alt="로그아웃" />
+          <img src="/images/emptyglass.png" class="nav-icon" alt="로그아웃" />
           로그아웃
         </v-btn>
         <v-btn text :to="{ name: 'profile' }" link>  
@@ -96,13 +96,13 @@
       <template v-if="isAuth">
         <v-list-item link @click="logout">
           <template #prepend>
-            <img src="/images/wineglass.png" class="nav-icon" alt="로그아웃" />
+            <img src="/images/emptyglass.png" class="nav-icon" alt="로그아웃" />
           </template>
           <v-list-item-title>로그아웃</v-list-item-title>
         </v-list-item>
 
         <v-list-item
-          link
+          component="RouterLink"
           :to="{ name: 'profile' }"
           @click="drawer = false"
         >
