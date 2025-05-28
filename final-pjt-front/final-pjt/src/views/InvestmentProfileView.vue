@@ -108,30 +108,38 @@
             </v-col>
 
             <!-- 자산 목표 설정 카드 -->
-            <v-col cols="12" md="6" class="mb-4">
-              <v-card elevation="2" class="h-100 profile-card" :class="{ 'card-hover': true }">
-                <v-img src="/images/plan.png" height="300" cover class="align-end card-image"
-                  gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.6)">
-                  <v-card-title class="text-white text-shadow">
-                    자산 목표 설정
-                  </v-card-title>
-                </v-img>
-                <v-card-text class="d-flex flex-column h-100 pa-6">
-                  <div class="flex-grow-1">
-                    <div v-if="goalProgress" class="goal-progress">
-                      <!-- 진행률 게이지 -->
-                      <div class="d-flex justify-center mb-6">
-                        <v-progress-circular :model-value="goalProgress.progress_percentage"
-                          :color="getProgressColor(goalProgress.progress_percentage)" size="120" width="12"
-                          class="progress-gauge">
-                          <span class="text-h5 font-weight-bold">
-                            {{ goalProgress.progress_percentage }}%
-                          </span>
-                        </v-progress-circular>
-                      </div>
+<v-col cols="12" md="6" class="mb-4">
+  <v-card elevation="2" class="h-100 profile-card">
+    <v-img
+      src="/images/plan.png"
+      height="300"
+      cover
+      class="align-end card-image"
+      gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.6)"
+    >
+      <v-card-title class="text-white text-shadow">
+        자산 목표 설정
+      </v-card-title>
+    </v-img>
 
-                      <!-- 자산 정보 -->
-                      <v-list class="asset-list">
+    <!-- flex 배치에 justify-space-between 추가 -->
+    <v-card-text class="d-flex flex-column justify-space-between pa-6">
+      <div v-if="goalProgress">
+        <!-- 진행률 게이지 등 기존 내용 유지 -->
+        <div class="d-flex justify-center mb-6">
+          <v-progress-circular
+            :model-value="goalProgress.progress_percentage"
+            :color="getProgressColor(goalProgress.progress_percentage)"
+            size="120"
+            width="12"
+            class="progress-gauge"
+          >
+            <span class="text-h5 font-weight-bold">
+              {{ goalProgress.progress_percentage }}%
+            </span>
+          </v-progress-circular>
+        </div>
+        <v-list class="asset-list">
                         <v-list-item class="asset-item">
                           <template v-slot:prepend>
                             <v-icon icon="mdi-wallet" color="grey darken-3" size="large" />
@@ -168,16 +176,17 @@
                           </v-list-item-subtitle>
                         </v-list-item>
                       </v-list>
-                    </div>
-                  </div>
-                  <v-btn block color="grey darken-3" variant="elevated" class="mt-auto action-button" @click="goToGoal"
-                    elevation="2">
-                    <v-icon icon="mdi-pencil" class="mr-2" />
-                    목표 설정하기
-                  </v-btn>
-                </v-card-text>
-              </v-card>
-            </v-col>
+      </div>
+
+      <!-- margin-top 대신 빈 공간 자동 배분으로 아래에 붙음 -->
+      <v-btn block color="grey darken-3" variant="elevated" @click="goToGoal">
+        <v-icon icon="mdi-pencil" class="mr-2" />
+        목표 설정하기
+      </v-btn>
+    </v-card-text>
+  </v-card>
+</v-col>
+
           </v-row>
 
           <!-- 추천 버튼 -->
