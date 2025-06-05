@@ -4,8 +4,6 @@
 <img src="https://github.com/user-attachments/assets/8b7ccea2-2ccb-4f0e-91cd-3e82e345da54" width="450" height="300" />
 </p>
 
-## SSAFY 13기 1학기 관통프로젝트 - 금융
-
 ## 배포 주소
 
 ## 팀원 소개
