@@ -18,7 +18,6 @@
 | 김혜정     | 백엔드 개발<br> (API 설계 및 DB 모델링)     | Django Rest Framework (DRF), PostgreSQL, <br> Google Cloud SQL, Google Cloud Run, OpenAI API, Youtube Data API |
 
 ## 프로젝트 소개 
-SSAFY 13기 1학기 최종 관통 프로젝트 : 금융  
 > **나만의 금융 레시피로 블렌딩한 맞춤 금융 상품 추천 서비스, FinBar**
 * 사용자의 투자 성향과 자산 정보를 기반으로 AI 기반 맞춤 금융 추천 상품 정보를 제공합니다.
 * 예, 적금 상품을 조회하고 각 금리 정보를 비교할 수 있습니다.
@@ -40,7 +39,7 @@ $ cd final-pjt
 
 #### Backend
 ```
-$ cd final-pjt-backend
+$ cd final-pjt-back
 $
 $
 ```
@@ -198,6 +197,7 @@ sequenceDiagram
 |250523|공통 <br> * 일일 작업 계획 <br> * 각 작업 간 이슈 공유 프론트 <br> * 컴포넌트 구조 설정 ✅ <br> * 회원정보 수정 페이지 구현 ✅ <br> * 은행 지도 페이지 구현 ❌ <br> * 게시판 CRUD 페이지 구현 백엔드 <br> * 회원정보 Serializer 코드 오류 해결 <br> * 게시판 CRUD 로직 구현 이슈 및 결정 사항 <br> * user serializer 이슈 조치 <br> * API_KEY 요청 BE에서 처리 <br> * 배포 시 HTTPS 적용 확인 (firebase => https) <br> * 게시글 생성 후 게시글 상세로 이동 <br> * 게시글 생성 시 ID(username) 사용|
 |250522|(김혜정) 코드 및 작동 확인 공통 <br> * 역할 분담 <br> * notion을 활용한 개발 계획(backlog) 설정 프론트 <br> * Figma 와이어 프레임 설정 ✅ <br> * 컴포넌트 구조 설정 <br> * 사용자 로그인, 회원가입 페이지 구현 ✅ 백 <br> * 사용자 로그인 구현 ✅ <br> * 사용자 회원가입 구현 ✅ 이슈 및 결정 사항 <br> * 회원가입 시 입력받는 값 `username`, `password`, `email`, `nickname` (커뮤니티 기능을 위해, USER 모델에 `nickname` 컬럼 추가) <br> * local storage 와 pinia 연동, 상태 저장 및 삭제 기능 <br> * Pinia Plugin Persistedstate 문서 확인 <br> * token 인증 방식 사용 <br> * 추후 대댓글 기능(테이블) 추가 예정 <br> * 댓글 수정 기능 (테이블) 추가 완료 * 회원가입 시 나이 입력 받기 <br> * (FE, BE) 회원 정보 수정 기능 구현 <br> * (FE) firebase 배포 시 https 여부 확인  <br> * (BE) settings.SECRET_KEY `.env`에 추가 ✅ <br> * (BE) API 문서화 ✅|
 
+(notion 링크 추가)
 
 ## 회고
 * (velog 링크)
