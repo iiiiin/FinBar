@@ -3,7 +3,7 @@ name: Build & Deploy to Firebase Hosting
 on:
   push:
     branches:
-      - relase-1.0       # 배포 트리거할 브랜치 (필요에 따라 변경)
+      - release-1.0       # 배포 트리거할 브랜치 (필요에 따라 변경)
 
 jobs:
   build-and-deploy:
