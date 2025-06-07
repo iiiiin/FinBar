@@ -1,0 +1,38 @@
+name: Build & Deploy to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - relase-1.0       # 배포 트리거할 브랜치 (필요에 따라 변경)
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    # VITE_ 접두사 환경변수는 Vite 빌드 시 import.meta.env.VITE_* 로 주입됩니다.
+    env:
+      VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+      VITE_KAKAO_JS_KEY: ${{ secrets.VITE_KAKAO_JS_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (Vite)
+        run: npm run build
+
+      - name: Deploy to Firebase Hosting
+        uses: w9jds/firebase-action@v3
+        with:
+          args: deploy --only hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
