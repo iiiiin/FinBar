@@ -25,9 +25,11 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
+        working-directory: final-pjt-front/final-pjt
         run: npm ci
 
       - name: Build (Vite)
+        working-directory: final-pjt-front/final-pjt
         run: npm run build
 
       - name: Deploy to Firebase Hosting
