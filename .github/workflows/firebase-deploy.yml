@@ -38,6 +38,6 @@ jobs:
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}               # 자동으로 제공되는 토큰
           firebaseServiceAccount: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          projectId: your-firebase-project-id                  # .firebaserc에 설정된 프로젝트 아이디
+          projectId: finbar-cac6e                  # .firebaserc에 설정된 프로젝트 아이디
           channelId: live                                       # 기본 배포 채널(보통 live)
           entryPoint: final-pjt-front/final-pjt    # ← firebase.json 위치 지정
